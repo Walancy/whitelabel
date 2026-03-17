@@ -1,27 +1,301 @@
-import { Palette, RefreshCw } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Palette, CheckCircle2, Sliders, CornerUpRight, Moon, Sun, PanelLeft } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 
-export const LayoutSwitcher = () => {
-  const { visualPattern, togglePattern } = useTheme();
+interface LayoutSwitcherProps {
+  showFormWidthOption?: boolean;
+}
+
+export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherProps) => {
+  const { 
+    theme,
+    toggleTheme,
+    visualPattern, 
+    setVisualPattern, 
+    accentColor, 
+    setAccentColor, 
+    useCustomAccent, 
+    setUseCustomAccent,
+    borderRadius,
+    setBorderRadius,
+    showShadows,
+    setShowShadows,
+    authFormWidth,
+    setAuthFormWidth
+  } = useTheme();
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const patterns = [
+    { id: 'nexus', name: 'Nexus' },
+    { id: 'shopeers', name: 'Shopeers' },
+    { id: 'projectli', name: 'Projectli' },
+    { id: 'magika', name: 'Magika' },
+    { id: 'workly', name: 'Workly' },
+    { id: 'taskplus', name: 'Taskplus' },
+    { id: 'eevo', name: 'Eevo' },
+    { id: 'quantum', name: 'Quantum' },
+    { id: 'resync', name: 'ReSync' }
+  ] as const;
+
+  const hexToHsl = (hex: string) => {
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 4) {
+      r = parseInt(hex[1] + hex[1], 16);
+      g = parseInt(hex[2] + hex[2], 16);
+      b = parseInt(hex[3] + hex[3], 16);
+    } else if (hex.length === 7) {
+      r = parseInt(hex.substring(1, 3), 16);
+      g = parseInt(hex.substring(3, 5), 16);
+      b = parseInt(hex.substring(5, 7), 16);
+    }
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+
+  const hslToHex = (hsl: string) => {
+    const parts = hsl.split(' ');
+    const h = parseInt(parts[0]) / 360;
+    const s = parseInt(parts[1].replace('%', '')) / 100;
+    const l = parseInt(parts[2].replace('%', '')) / 100;
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      const hue2rgb = (t: number) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      r = hue2rgb(h + 1 / 3);
+      g = hue2rgb(h);
+      b = hue2rgb(h - 1 / 3);
+    }
+    const toHex = (x: number) => Math.round(x * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+
+  const presetColors = [
+    { name: 'Nexus (Default)', value: '240 5.9% 10%' },
+    { name: 'Lime', value: '84 100% 59%' },
+    { name: 'Blue', value: '221 83% 53%' },
+    { name: 'Green', value: '142 71% 45%' },
+    { name: 'Red', value: '0 84.2% 60.2%' },
+    { name: 'Purple', value: '262 83% 58%' },
+    { name: 'Orange', value: '24.6 95% 53%' }
+  ];
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <button 
-        onClick={togglePattern}
-        className={cn(
-          "flex items-center gap-2 px-4 py-3 rounded-full shadow-2xl transition-all active:scale-95 group",
-          visualPattern === 'nexus' 
-            ? "bg-foreground text-background" 
-            : "bg-blue-600 text-white"
-        )}
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-12 h-12 flex items-center justify-center rounded-full shadow-2xl transition-all active:scale-95 group bg-foreground text-background"
       >
-        <RefreshCw size={18} className="group-hover:rotate-180 transition-transform duration-500" />
-        <span className="text-sm font-bold capitalize">
-           Switch to {visualPattern === 'nexus' ? 'Shopeers' : 'Nexus'}
-        </span>
-        <Palette size={18} />
+        <Palette size={20} className="group-hover:rotate-12 transition-transform duration-300" />
       </button>
+
+      {isOpen && (
+        <div ref={dropdownRef} className="absolute bottom-16 right-0 bg-card border border-border shadow-2xl rounded-2xl p-4 w-72 flex flex-col gap-5 z-50 animate-in slide-in-from-bottom-2 overflow-y-auto max-h-[85vh] scrollbar-hide">
+          {/* Layout Selection */}
+          <div>
+            <p className="px-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">Visual Layout</p>
+            <div className="flex flex-col gap-0.5 max-h-[160px] overflow-y-auto pr-1 scrollbar-hide">
+              {patterns.map((pattern) => (
+                <button
+                  key={pattern.id}
+                  onClick={() => setVisualPattern(pattern.id)}
+                  className={cn(
+                    "flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all",
+                    visualPattern === pattern.id 
+                      ? "bg-primary text-primary-foreground font-semibold shadow-sm" 
+                      : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <span className="capitalize">{pattern.name}</span>
+                  {visualPattern === pattern.id && <CheckCircle2 size={14} />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="h-px bg-border" />
+
+          {/* Dark/Light mode - sempre visível */}
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              {theme === 'dark' ? <Moon size={14} className="text-muted-foreground" /> : <Sun size={14} className="text-muted-foreground" />}
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Dark / Light</p>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className={cn(
+                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none',
+                theme === 'dark' ? 'bg-primary' : 'bg-muted'
+              )}
+              aria-label={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
+            >
+              <span className={cn(
+                'pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white ring-0 transition-transform',
+                theme === 'dark' ? 'translate-x-5' : 'translate-x-1'
+              )} />
+            </button>
+          </div>
+
+          {/* Largura do formulário (apenas na tela de login) */}
+          {showFormWidthOption && (
+            <div>
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <PanelLeft size={14} className="text-muted-foreground" />
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Largura do formulário</p>
+                <span className="ml-auto text-[10px] font-semibold text-foreground bg-accent/40 px-1.5 py-0.5 rounded">{authFormWidth}%</span>
+              </div>
+              <div className="px-1">
+                <input
+                  type="range"
+                  min={35}
+                  max={60}
+                  value={authFormWidth}
+                  onChange={(e) => setAuthFormWidth(Number(e.target.value))}
+                  className="w-full h-1.5 bg-accent rounded-full appearance-none cursor-pointer accent-primary"
+                  aria-label="Largura do painel do formulário"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="h-px bg-border" />
+
+          {/* Controls Section (Radius & Shadows) */}
+          <div className="flex flex-col gap-4">
+            {/* Border Radius Control */}
+            <div>
+              <div className="flex items-center gap-2 mb-3 px-1">
+                 <CornerUpRight size={14} className="text-muted-foreground" />
+                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Corner Radius</p>
+                 <span className="ml-auto text-[10px] font-bold text-foreground bg-accent/40 px-1.5 py-0.5 rounded">{borderRadius}%</span>
+              </div>
+              <div className="px-1">
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="100" 
+                  value={borderRadius}
+                  onChange={(e) => setBorderRadius(Number(e.target.value))}
+                  className="w-full h-1.5 bg-accent rounded-full appearance-none cursor-pointer accent-primary"
+                />
+              </div>
+            </div>
+
+            {/* Shadows Toggle */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                 <Moon size={14} className="text-muted-foreground" />
+                 <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Enable Shadows</p>
+              </div>
+              <button 
+                onClick={() => setShowShadows(!showShadows)}
+                className={cn(
+                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none",
+                  showShadows ? "bg-primary" : "bg-muted"
+                )}
+              >
+                <span className={cn(
+                  "pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm ring-0 transition-transform",
+                  showShadows ? "translate-x-5" : "translate-x-1"
+                )} />
+              </button>
+            </div>
+          </div>
+
+          <div className="h-px bg-border" />
+
+          {/* Accent Color Section */}
+          <div>
+             <div className="flex items-center justify-between mb-4 px-1">
+                <div className="flex items-center gap-2">
+                   <Sliders size={14} className="text-muted-foreground" />
+                   <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Accent Colors</p>
+                </div>
+                <button 
+                  onClick={() => setUseCustomAccent(!useCustomAccent)}
+                  className={cn(
+                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none",
+                    useCustomAccent ? "bg-primary" : "bg-muted"
+                  )}
+                >
+                  <span className={cn(
+                    "pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow-sm ring-0 transition-transform",
+                    useCustomAccent ? "translate-x-5" : "translate-x-1"
+                  )} />
+                </button>
+             </div>
+             
+             {useCustomAccent && (
+               <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="grid grid-cols-7 gap-1.5 px-0.5 mb-3">
+                    {presetColors.map((color) => (
+                      <button 
+                        key={color.value}
+                        onClick={() => setAccentColor(color.value)}
+                        title={color.name}
+                        className={cn(
+                          "w-8 h-8 rounded-lg border transition-all active:scale-90",
+                          accentColor === color.value ? "ring-2 ring-primary ring-offset-2 ring-offset-card scale-110" : "border-border"
+                        )}
+                        style={{ backgroundColor: `hsl(${color.value})` }}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 px-2 py-2 bg-accent/20 rounded-lg border border-border">
+                    <input 
+                       type="color" 
+                       value={hslToHex(accentColor)}
+                       onChange={(e) => setAccentColor(hexToHsl(e.target.value))}
+                       className="w-10 h-6 rounded-md border border-border cursor-pointer appearance-none bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-none"
+                    />
+                    <span className="text-[10px] font-semibold text-muted-foreground truncate">Pick Custom Color</span>
+                  </div>
+               </div>
+             )}
+             
+             {!useCustomAccent && (
+               <div className="px-3 py-4 rounded-xl border border-border border-dashed text-center bg-accent/10">
+                  <p className="text-[10px] text-muted-foreground font-medium">Using native layout colors</p>
+               </div>
+             )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

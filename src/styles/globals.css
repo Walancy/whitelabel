@@ -66,12 +66,27 @@ input, button {
   height: 2.5rem; /* Standardizing sizes */
 }
 
+/* Override browser autofill: mantém estilo do input (evita fundo azulado Chromium) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: hsl(var(--foreground));
+  transition: background-color 99999s ease-in-out 99999s, color 99999s ease-in-out 99999s;
+  box-shadow: inset 0 0 0 9999px hsl(var(--input)) !important; /* exceção: cobre autofill do navegador */
+}
+
 .short-gap {
   gap: 0.5rem;
 }
 
 .semi-bold {
   font-weight: 600;
+}
+
+/* Shadows toggle rule */
+.no-shadows * {
+  box-shadow: none !important;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -103,4 +118,89 @@ input, button {
   @apply bg-muted-foreground/40;
 }
 
-
+/* Workly: neon / glass – usa sempre a cor selecionada (--primary) */
+[data-pattern="workly"] {
+  --workly-surface: 240 5% 18%;
+}
+[data-pattern="workly"]:not(.dark) {
+  --workly-surface: 240 4.8% 92%;
+}
+[data-pattern="workly"].dark {
+  --background: 240 6% 10%;
+  --card: 240 6% 12%;
+  --border: 240 5% 20%;
+  --input: 240 5% 16%;
+}
+[data-pattern="workly"] .workly-neon-active {
+  /* Luz saindo da borda direita: mais forte na origem, mais fraco no final */
+  background:
+    linear-gradient(
+      to left,
+      hsl(var(--primary) / 0.72) 0%,
+      hsl(var(--primary) / 0.28) 15%,
+      hsl(var(--primary) / 0.06) 40%,
+      hsl(var(--input)) 100%
+    );
+  border-radius: var(--radius);
+  border-top: 1px solid hsl(0 0% 100% / 0.04);
+  border-bottom: 1px solid hsl(0 0% 100% / 0.04);
+  border-right: 2px solid hsl(var(--primary));
+  border-left: none;
+  box-shadow: 2px 0 14px 2px hsl(var(--primary) / 0.4);
+  color: hsl(var(--primary-foreground));
+}
+[data-pattern="workly"]:not(.dark) .workly-neon-active {
+  border-top: 1px solid hsl(0 0% 0% / 0.06);
+  border-bottom: 1px solid hsl(0 0% 0% / 0.06);
+  color: hsl(var(--foreground));
+}
+[data-pattern="workly"]:not(.dark) .workly-neon-active * {
+  color: inherit;
+}
+[data-pattern="workly"] .workly-neon-active * {
+  color: inherit;
+}
+[data-pattern="workly"] .workly-glass {
+  background: hsl(var(--card) / 0.85);
+  backdrop-filter: blur(8px);
+}
+[data-pattern="workly"] .workly-plan-card {
+  background: hsla(0, 0%, 100%, 0.048);
+}
+[data-pattern="workly"]:not(.dark) .workly-plan-card {
+  background: hsl(240 5% 96%);
+}
+/* Mesmo efeito do botão da sidebar (luz das bordas), intensidade menor; degrade da esquerda e da direita */
+[data-pattern="workly"] .workly-btn-primary {
+  background:
+    linear-gradient(to left, hsl(var(--primary) / 0.42) 0%, hsl(var(--primary) / 0.18) 15%, hsl(var(--primary) / 0.04) 40%, transparent 100%),
+    linear-gradient(to right, hsl(var(--primary) / 0.42) 0%, hsl(var(--primary) / 0.18) 15%, hsl(var(--primary) / 0.04) 40%, transparent 100%),
+    hsl(var(--input));
+  color: hsl(var(--primary-foreground));
+  border-radius: var(--radius);
+  border: 1px solid hsl(0 0% 100% / 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+[data-pattern="workly"]:not(.dark) .workly-btn-primary {
+  border: 1px solid hsl(0 0% 0% / 0.08);
+  color: hsl(var(--foreground));
+}
+[data-pattern="workly"]:not(.dark) .workly-btn-primary * {
+  color: inherit;
+}
+[data-pattern="workly"] .workly-btn-primary * {
+  color: inherit;
+}
+[data-pattern="workly"] .workly-btn-primary:hover {
+  background:
+    linear-gradient(to left, hsl(var(--primary) / 0.5) 0%, hsl(var(--primary) / 0.22) 15%, hsl(var(--primary) / 0.05) 40%, transparent 100%),
+    linear-gradient(to right, hsl(var(--primary) / 0.5) 0%, hsl(var(--primary) / 0.22) 15%, hsl(var(--primary) / 0.05) 40%, transparent 100%),
+    hsl(var(--input));
+}
+[data-pattern="workly"] .workly-surface {
+  background: hsl(var(--workly-surface));
+}
+[data-pattern="workly"] .workly-surface:hover {
+  background: hsl(var(--workly-surface) / 0.9);
+}
