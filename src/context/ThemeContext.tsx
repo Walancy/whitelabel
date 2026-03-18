@@ -1,7 +1,14 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 
 type Theme = 'light' | 'dark';
 type VisualPattern = 'nexus' | 'shopeers' | 'projectli' | 'magika' | 'workly' | 'taskplus' | 'eevo' | 'quantum' | 'resync';
+export type AuthBgKey =
+  | 'none' | 'dark-veil' | 'soft-aurora' | 'aurora' | 'iridescence' | 'silk'
+  | 'color-bends' | 'pixel-blast' | 'beams' | 'gradient-blinds' | 'liquid-ether'
+  | 'plasma' | 'line-waves' | 'light-rays' | 'light-pillar' | 'orb'
+  | 'dot-grid' | 'prism' | 'prismatic-burst' | 'shape-grid';
+
+export type AuthBgConfig = Record<string, number | string | boolean>;
 
 interface ThemeContextType {
   theme: Theme;
@@ -10,6 +17,7 @@ interface ThemeContextType {
   togglePattern: () => void;
   setVisualPattern: React.Dispatch<React.SetStateAction<VisualPattern>>;
   accentColor: string;
+  activeAccentColor: string;
   setAccentColor: (color: string) => void;
   useCustomAccent: boolean;
   setUseCustomAccent: (use: boolean) => void;
@@ -19,44 +27,47 @@ interface ThemeContextType {
   setShowShadows: (show: boolean) => void;
   authFormWidth: number;
   setAuthFormWidth: (width: number) => void;
+  authBg: AuthBgKey;
+  setAuthBg: (bg: AuthBgKey) => void;
+  authBgConfigs: Record<string, AuthBgConfig>;
+  setAuthBgConfig: (bg: AuthBgKey, config: AuthBgConfig) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Pattern defaults
-const PATTERN_DEFAULTS: Record<VisualPattern, string> = {
-  nexus: '240 5.9% 10%',
-  shopeers: '221 83% 53%',
-  projectli: '142 71% 45%',
-  magika: '262 83% 58%',
-  workly: '263 70% 58%',
-  taskplus: '0 84.2% 60.2%',
-  eevo: '84 100% 59%',
-  quantum: '221 83% 53%',
-  resync: '142 71% 45%'
+export const PATTERN_DEFAULTS: Record<VisualPattern, string> = {
+  nexus: '240 5.9% 10%', shopeers: '221 83% 53%', projectli: '142 71% 45%',
+  magika: '262 83% 58%', workly: '263 70% 58%', taskplus: '0 84.2% 60.2%',
+  eevo: '84 100% 59%', quantum: '221 83% 53%', resync: '142 71% 45%',
+};
+
+const parseConfigs = (): Record<string, AuthBgConfig> => {
+  try { return JSON.parse(localStorage.getItem('authBgConfigs') || '{}'); }
+  catch { return {}; }
 };
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem('theme') as Theme) || 'light'
-  );
+    () => (localStorage.getItem('theme') as Theme) || 'light');
   const [visualPattern, setVisualPattern] = useState<VisualPattern>(
-    () => (localStorage.getItem('visualPattern') as VisualPattern) || 'nexus'
-  );
+    () => (localStorage.getItem('visualPattern') as VisualPattern) || 'nexus');
   const [accentColor, setAccentColorState] = useState<string>(
-    () => localStorage.getItem('accentColor') || '240 5.9% 10%'
-  );
+    () => localStorage.getItem('accentColor') || '240 5.9% 10%');
   const [useCustomAccent, setUseCustomAccent] = useState<boolean>(
-    () => localStorage.getItem('useCustomAccent') === 'true'
-  );
+    () => localStorage.getItem('useCustomAccent') === 'true');
   const [borderRadius, setBorderRadius] = useState<number>(
-    () => Number(localStorage.getItem('borderRadius')) || 50
-  );
+    () => Number(localStorage.getItem('borderRadius')) || 50);
   const [showShadows, setShowShadows] = useState<boolean>(
-    () => localStorage.getItem('showShadows') !== 'false'
-  );
+    () => localStorage.getItem('showShadows') !== 'false');
   const [authFormWidth, setAuthFormWidth] = useState<number>(
-    () => Math.min(60, Math.max(35, Number(localStorage.getItem('authFormWidth')) || 50))
+    () => Math.min(60, Math.max(35, Number(localStorage.getItem('authFormWidth')) || 50)));
+  const [authBg, setAuthBgState] = useState<AuthBgKey>(
+    () => (localStorage.getItem('authBg') as AuthBgKey) || 'none');
+  const [authBgConfigs, setAuthBgConfigsState] = useState<Record<string, AuthBgConfig>>(parseConfigs);
+
+  const activeAccentColor = useMemo(
+    () => (useCustomAccent ? accentColor : PATTERN_DEFAULTS[visualPattern]),
+    [useCustomAccent, accentColor, visualPattern]
   );
 
   useEffect(() => {
@@ -73,74 +84,43 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('borderRadius', String(borderRadius));
     localStorage.setItem('showShadows', String(showShadows));
     localStorage.setItem('authFormWidth', String(authFormWidth));
-  }, [visualPattern, useCustomAccent, borderRadius, showShadows, authFormWidth]);
+    localStorage.setItem('authBg', authBg);
+    localStorage.setItem('authBgConfigs', JSON.stringify(authBgConfigs));
+  }, [visualPattern, useCustomAccent, borderRadius, showShadows, authFormWidth, authBg, authBgConfigs]);
 
   useEffect(() => {
     const root = window.document.documentElement;
-    const activeColor = useCustomAccent ? accentColor : PATTERN_DEFAULTS[visualPattern];
-    
-    // Primary/Accent colors
-    root.style.setProperty('--primary', activeColor);
-    root.style.setProperty('--accent', activeColor);
-    
-    // STRICT Y-AXIS CONTRAST (Lightness only)
-    // parts[2] is the Lightness (Y axis) in HSL.
-    // We ignore parts[1] (Saturation / X axis).
-    const parts = activeColor.split(' ');
-    const lightnessPart = parts[2] || '0%';
-    const lightness = parseInt(lightnessPart.replace('%', '')) || 0;
-    
-    // Threshold usually around 50-60%. 
-    // If lightness is high (top of Y axis), use dark text.
-    // If lightness is low (bottom of Y axis), use white text.
-    const foreground = lightness > 60 ? '240 10% 3.9%' : '0 0% 98%';
-    
-    root.style.setProperty('--primary-foreground', foreground);
-    root.style.setProperty('--accent-foreground', foreground);
-    
-    // Border Radius mapping
-    const radiusInPx = (borderRadius / 100) * 24;
-    root.style.setProperty('--radius', `${radiusInPx}px`);
+    root.style.setProperty('--primary', activeAccentColor);
+    root.style.setProperty('--accent', activeAccentColor);
+    const parts = activeAccentColor.split(' ');
+    const lightness = parseInt((parts[2] || '0%').replace('%', '')) || 0;
+    const fg = lightness > 60 ? '240 10% 3.9%' : '0 0% 98%';
+    root.style.setProperty('--primary-foreground', fg);
+    root.style.setProperty('--accent-foreground', fg);
+    root.style.setProperty('--radius', `${(borderRadius / 100) * 24}px`);
     root.style.setProperty('--auth-form-width', String(authFormWidth));
-
-    if (showShadows) {
-      root.classList.remove('no-shadows');
-    } else {
-      root.classList.add('no-shadows');
-    }
-    
+    root.classList.toggle('no-shadows', !showShadows);
     localStorage.setItem('accentColor', accentColor);
-  }, [accentColor, visualPattern, useCustomAccent, borderRadius, showShadows, authFormWidth]);
+  }, [activeAccentColor, accentColor, borderRadius, showShadows, authFormWidth]);
 
-  const setAccentColor = (color: string) => {
-    setAccentColorState(color);
-    setUseCustomAccent(true);
-  };
-
+  const setAccentColor = (color: string) => { setAccentColorState(color); setUseCustomAccent(true); };
+  const setAuthBg = (bg: AuthBgKey) => setAuthBgState(bg);
+  const setAuthBgConfig = (bg: AuthBgKey, config: AuthBgConfig) =>
+    setAuthBgConfigsState(prev => ({ ...prev, [bg]: config }));
   const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   const togglePattern = () => setVisualPattern(prev => {
-    const patterns: VisualPattern[] = ['nexus', 'shopeers', 'projectli', 'magika', 'workly', 'taskplus', 'eevo', 'quantum', 'resync'];
-    const currentIndex = patterns.indexOf(prev);
-    return patterns[(currentIndex + 1) % patterns.length];
+    const list: VisualPattern[] = ['nexus', 'shopeers', 'projectli', 'magika', 'workly', 'taskplus', 'eevo', 'quantum', 'resync'];
+    return list[(list.indexOf(prev) + 1) % list.length];
   });
 
   return (
-    <ThemeContext.Provider value={{ 
-      theme, 
-      toggleTheme, 
-      visualPattern, 
-      togglePattern, 
-      setVisualPattern,
-      accentColor,
-      setAccentColor,
-      useCustomAccent,
-      setUseCustomAccent,
-      borderRadius,
-      setBorderRadius,
-      showShadows,
-      setShowShadows,
-      authFormWidth,
-      setAuthFormWidth
+    <ThemeContext.Provider value={{
+      theme, toggleTheme, visualPattern, togglePattern, setVisualPattern,
+      accentColor, activeAccentColor, setAccentColor,
+      useCustomAccent, setUseCustomAccent,
+      borderRadius, setBorderRadius, showShadows, setShowShadows,
+      authFormWidth, setAuthFormWidth,
+      authBg, setAuthBg, authBgConfigs, setAuthBgConfig,
     }}>
       {children}
     </ThemeContext.Provider>
@@ -148,9 +128,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error('useTheme must be used within a ThemeProvider');
+  return ctx;
 }

@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import { Palette, CheckCircle2, Sliders, CornerUpRight, Moon, Sun, PanelLeft } from 'lucide-react';
+import { Palette, CheckCircle2, Sliders, CornerUpRight, Moon, Sun, PanelLeft, Layers, Settings2 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
+import { AUTH_BG_OPTIONS } from '@/components/ui/AuthBackground';
+import { AuthBgSettingsPanel } from '@/components/ui/AuthBgSettingsPanel';
 
 interface LayoutSwitcherProps {
   showFormWidthOption?: boolean;
@@ -22,17 +24,30 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
     showShadows,
     setShowShadows,
     authFormWidth,
-    setAuthFormWidth
+    setAuthFormWidth,
+    authBg,
+    setAuthBg,
   } = useTheme();
   
   const [isOpen, setIsOpen] = useState(false);
+  const [bgDropOpen, setBgDropOpen] = useState(false);
+  const [layoutDropOpen, setLayoutDropOpen] = useState(false);
+  const [settingsMode, setSettingsMode] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const bgDropRef = useRef<HTMLDivElement>(null);
+  const layoutDropRef = useRef<HTMLDivElement>(null);
 
   // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+      }
+      if (bgDropRef.current && !bgDropRef.current.contains(event.target as Node)) {
+        setBgDropOpen(false);
+      }
+      if (layoutDropRef.current && !layoutDropRef.current.contains(event.target as Node)) {
+        setLayoutDropOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -125,26 +140,58 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
       </button>
 
       {isOpen && (
-        <div ref={dropdownRef} className="absolute bottom-16 right-0 bg-card border border-border shadow-2xl rounded-2xl p-4 w-72 flex flex-col gap-5 z-50 animate-in slide-in-from-bottom-2 overflow-y-auto max-h-[85vh] scrollbar-hide">
+        <div ref={dropdownRef} className="absolute bottom-16 right-0 bg-card border border-border shadow-2xl rounded-2xl p-4 w-72 z-50 animate-in slide-in-from-bottom-2 max-h-[85vh]">
+
+          {/* === SETTINGS MODE === */}
+          {settingsMode ? (
+            <AuthBgSettingsPanel onBack={() => setSettingsMode(false)} />
+          ) : (
+          <div className="flex flex-col gap-5 overflow-y-auto max-h-[calc(85vh-2rem)] scrollbar-hide">
+
           {/* Layout Selection */}
           <div>
-            <p className="px-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">Visual Layout</p>
-            <div className="flex flex-col gap-0.5 max-h-[160px] overflow-y-auto pr-1 scrollbar-hide">
-              {patterns.map((pattern) => (
-                <button
-                  key={pattern.id}
-                  onClick={() => setVisualPattern(pattern.id)}
-                  className={cn(
-                    "flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all",
-                    visualPattern === pattern.id 
-                      ? "bg-primary text-primary-foreground font-semibold shadow-sm" 
-                      : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
-                  )}
+            <div className="flex items-center gap-2 mb-2 px-1">
+              <Palette size={14} className="text-muted-foreground" />
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Visual Layout</p>
+            </div>
+            <div ref={layoutDropRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setLayoutDropOpen(p => !p)}
+                className="w-full h-9 px-3 text-xs bg-accent/20 border border-border rounded-[var(--radius)] text-foreground flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors"
+                aria-haspopup="listbox"
+                aria-expanded={layoutDropOpen}
+                aria-label="Selecionar estilo visual"
+              >
+                <span className="capitalize">{patterns.find(p => p.id === visualPattern)?.name ?? visualPattern}</span>
+                <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className={cn('transition-transform duration-150 text-muted-foreground', layoutDropOpen && 'rotate-180')}>
+                  <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              {layoutDropOpen && (
+                <ul
+                  role="listbox"
+                  className="absolute top-full mt-1 left-0 w-full bg-card border border-border rounded-[var(--radius)] py-1 z-[60] overflow-y-auto scrollbar-hide shadow-lg"
                 >
-                  <span className="capitalize">{pattern.name}</span>
-                  {visualPattern === pattern.id && <CheckCircle2 size={14} />}
-                </button>
-              ))}
+                  {patterns.map((pattern) => (
+                    <li
+                      key={pattern.id}
+                      role="option"
+                      aria-selected={visualPattern === pattern.id}
+                      onClick={() => setVisualPattern(pattern.id)}
+                      className={cn(
+                        'flex items-center justify-between px-3 py-1.5 text-xs cursor-pointer transition-colors capitalize',
+                        visualPattern === pattern.id
+                          ? 'bg-primary/10 text-primary font-semibold'
+                          : 'text-foreground hover:bg-accent/40'
+                      )}
+                    >
+                      {pattern.name}
+                      {visualPattern === pattern.id && <CheckCircle2 size={12} />}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
@@ -189,6 +236,67 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                   className="w-full h-1.5 bg-accent rounded-full appearance-none cursor-pointer accent-primary"
                   aria-label="Largura do painel do formulário"
                 />
+              </div>
+            </div>
+          )}
+
+          {/* Auth Background */}
+          {showFormWidthOption && (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 px-1">
+                <Layers size={14} className="text-muted-foreground" />
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Auth Background</p>
+                {authBg !== 'none' && (
+                  <button
+                    type="button"
+                    onClick={() => setSettingsMode(true)}
+                    title="Ajustar efeito"
+                    aria-label="Ajustar parâmetros do efeito"
+                    className="ml-auto w-6 h-6 flex items-center justify-center rounded-md hover:bg-accent/40 transition-colors text-muted-foreground hover:text-foreground"
+                  >
+                    <Settings2 size={12} />
+                  </button>
+                )}
+              </div>
+
+              <div ref={bgDropRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setBgDropOpen(p => !p)}
+                  className="w-full h-9 px-3 text-xs bg-accent/20 border border-border rounded-[var(--radius)] text-foreground flex items-center justify-between cursor-pointer hover:bg-accent/30 transition-colors"
+                  aria-haspopup="listbox"
+                  aria-expanded={bgDropOpen}
+                  aria-label="Estilo de fundo da tela de login"
+                >
+                  <span>{AUTH_BG_OPTIONS.find(o => o.value === authBg)?.label ?? 'Nenhum'}</span>
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className={cn('transition-transform duration-150 text-muted-foreground', bgDropOpen && 'rotate-180')}>
+                    <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                {bgDropOpen && (
+                  <ul
+                    role="listbox"
+                    className="absolute bottom-full mb-1 left-0 w-full bg-card border border-border rounded-[var(--radius)] py-1 z-[60] max-h-52 overflow-y-auto scrollbar-hide"
+                  >
+                    {AUTH_BG_OPTIONS.map((opt) => (
+                      <li
+                        key={opt.value}
+                        role="option"
+                        aria-selected={authBg === opt.value}
+                        onClick={() => setAuthBg(opt.value)}
+                        className={cn(
+                          'flex items-center justify-between px-3 py-1.5 text-xs cursor-pointer transition-colors',
+                          authBg === opt.value
+                            ? 'bg-primary/10 text-primary font-semibold'
+                            : 'text-foreground hover:bg-accent/40'
+                        )}
+                      >
+                        {opt.label}
+                        {authBg === opt.value && <CheckCircle2 size={12} />}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           )}
@@ -294,8 +402,11 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                </div>
              )}
           </div>
+          </div>
+          )}
         </div>
       )}
     </div>
   );
 };
+

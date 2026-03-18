@@ -1,12 +1,8 @@
 import { useState } from 'react';
-import { 
-  Github, 
-  Chrome, 
-  Eye, 
-  EyeOff, 
-  ArrowRight
-} from 'lucide-react';
+import { Github, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { GoogleIcon } from '@/components/ui/social-icons';
 import { cn } from '@/lib/utils';
+import { AuthBackground } from '@/components/ui/AuthBackground';
 
 export const NexusAuth = ({ onLogin }: { onLogin: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,8 +20,10 @@ export const NexusAuth = ({ onLogin }: { onLogin: () => void }) => {
       <div
         className="hidden lg:flex flex-col lg:min-w-0 bg-[#0A0A0A] relative p-12 justify-between lg:w-[calc((100-var(--auth-form-width))*1%)]"
       >
-        {/* Abstract Aura Background Overlay */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/20 blur-[130px] rounded-full pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/20 blur-[130px] rounded-full pointer-events-none z-[1]" />
+        <AuthBackground />
+        {/* Overlay para garantir legibilidade do texto em qualquer tema */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/70 via-black/40 to-black/70 pointer-events-none" />
         
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-20 animate-in fade-in slide-in-from-left duration-700">
@@ -94,7 +92,7 @@ export const NexusAuth = ({ onLogin }: { onLogin: () => void }) => {
           {/* Social Buttons */}
           <div className="grid grid-cols-2 gap-3">
             <button className="flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-card border border-border hover:bg-accent transition-all active:scale-[0.98]">
-              <Chrome size={18} />
+              <GoogleIcon size={18} />
               <span className="text-xs font-semibold">Google</span>
             </button>
             <button className="flex items-center justify-center gap-2 h-11 px-4 rounded-lg bg-card border border-border hover:bg-accent transition-all active:scale-[0.98]">

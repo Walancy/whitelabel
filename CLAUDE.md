@@ -1,0 +1,60 @@
+Siga sempre esses itens ao criar algo em um projeto:
+- Componentização de itens
+- Boas práticas de programação
+- Microfront-end
+- Não usar componentes muito grandes
+- consistência visual
+- Os botões devem ter o mesmo tamanho dos inputs e vice-versa
+- Use sempre espaçamentos e gaps curtos, nunca use muito espaço entre os itens
+- Nunca use fonte com expessura acima de semi-bold
+- Crie os componente e telas sempre com dark/light mode funcionais
+- Crie um arquivo de estilização global de facil alteração
+- Economize o máximo de tokens possível para gerar algo
+- sempre reutilize os componentes já criados, apenas crie novos componentes caso seja necessário
+- use shadcn e personalize os componentes para se adequar ao padrao do sistema
+- trabalhe com codigo limpo e facil de manter
+- use carregamento rápido (Vite/turborepo)
+- sempre use uma organização de pastas e arquivos que seja facil de entender e manter
+- escreva "Usando regras globais" no final de todo chat quando terminar de responder
+- nao abra o chrome a não que eu solocite que voce abra o nabvegador e veja o resultado
+- sempre que houver um erro, descubra como resolver e se ajuste para que esse erro nunca mais se repita
+- nunca use sombras ou bordas a não ser que eu solicite no prompt
+- sempre verifique se todos os componentes e textos da tela estao adequados ao lightmode e darkmode
+- use multitenent
+- Sempre usar TypeScript com tipagem estrita
+- Nunca usar "any"
+- Funções não devem ultrapassar 30 linhas
+- Arquivos não devem ultrapassar 200 linhas
+- Utilize lazy loading para rotas e componentes pesados
+- Evite re-renderizações desnecessárias
+- Use memoização quando necessário
+- Nunca usar cores hardcoded
+- Utilize design tokens para cores, spacing e tipografia
+- Componentes devem seguir Atomic Design
+- Sempre seguir boas práticas de acessibilidade (ARIA)
+- Garantir contraste adequado entre cores
+- Todos inputs devem possuir labels
+- Componentes interativos devem ser navegáveis por teclado
+- Sempre organizar o projeto usando estrutura de pastas clara e escalável
+- Nunca acessar banco diretamente em componentes
+- Centralizar chamadas de API em services
+- Sempre tratar erros de requisições
+- Sempre implementar loading e error states
+- Nunca expor secrets ou tokens no frontend
+- Validar dados antes de enviar para API
+- Sanitizar inputs quando necessário
+- Nunca deixar console.log em código de produção
+- Use logs apenas em ambiente de desenvolvimento
+- Sempre mostrar feedback visual para ações do usuário
+- Sempre mostrar loading states
+- Nunca deixar ações sem resposta visual
+- Erros devem sempre ter mensagens claras
+- Sempre analisar o projeto antes de criar novos arquivos
+- Nunca duplicar lógica existente
+- Sempre reutilizar funções, hooks e componentes existentes
+- Antes de implementar, sempre planeje a estrutura dos componentes e arquivos
+- deixe a scrollbar estilizada
+- nao deixe a scrollbar aparecer na siderbar
+- deixe a siderbar e header sempre fixos
+- mostre quantos creditos ou quantos% do meu limite de uso do claude foi usado para respoder, tanto da sessao atual quanto do limite semanal
+- responda e perfunte sempre em ptbr

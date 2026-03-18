@@ -2,20 +2,15 @@ import { useState } from 'react';
 import { Mail, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
+import { GoogleIcon, AppleIcon, FacebookIcon } from '@/components/ui/social-icons';
+import { AuthBackground } from '@/components/ui/AuthBackground';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PROJECTLI_AUTH_IMAGE = 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80';
-
-const GOOGLE_ICON = 'https://cdn.simpleicons.org/google/5F6368';
-const APPLE_ICON_LIGHT = 'https://cdn.simpleicons.org/apple/FFFFFF';
-const APPLE_ICON_DARK = 'https://cdn.simpleicons.org/apple/000000';
-const FACEBOOK_ICON = 'https://cdn.simpleicons.org/facebook/FFFFFF';
 
 export const ProjectliAuth = ({ onLogin }: { onLogin: () => void }) => {
   const { theme } = useTheme();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
-  const [imageError, setImageError] = useState(false);
   const emailValid = email.length > 0 && EMAIL_REGEX.test(email);
   const logoSrc = theme === 'dark' ? '/logo branca.svg' : '/logo preta.svg';
 
@@ -118,26 +113,15 @@ export const ProjectliAuth = ({ onLogin }: { onLogin: () => void }) => {
                 className="h-11 border border-border bg-card rounded-[var(--radius)] flex items-center justify-center gap-2 hover:bg-muted/50 transition-colors text-sm font-medium text-foreground"
                 aria-label="Continuar com Google"
               >
-                <img src={GOOGLE_ICON} alt="" className="size-5" width={20} height={20} />
+                <GoogleIcon size={20} />
                 <span className="hidden sm:inline">Google</span>
               </button>
               <button
                 type="button"
-                className={cn(
-                  'h-11 border rounded-[var(--radius)] flex items-center justify-center gap-2 transition-opacity text-sm font-medium',
-                  theme === 'dark'
-                    ? 'border-border bg-card text-foreground hover:bg-muted/50'
-                    : 'border-border bg-foreground text-white hover:opacity-90'
-                )}
+                className="h-11 border border-border bg-card rounded-[var(--radius)] flex items-center justify-center gap-2 hover:bg-muted/50 transition-colors text-sm font-medium text-foreground"
                 aria-label="Continuar com Apple"
               >
-                <img
-                  src={theme === 'dark' ? APPLE_ICON_DARK : APPLE_ICON_LIGHT}
-                  alt=""
-                  className="size-5"
-                  width={20}
-                  height={20}
-                />
+                <AppleIcon size={20} />
                 <span className="hidden sm:inline">Apple</span>
               </button>
               <button
@@ -145,7 +129,7 @@ export const ProjectliAuth = ({ onLogin }: { onLogin: () => void }) => {
                 className="h-11 border border-[#1877F2] bg-[#1877F2] rounded-[var(--radius)] flex items-center justify-center gap-2 hover:brightness-110 transition-all text-sm font-medium text-white"
                 aria-label="Continuar com Facebook"
               >
-                <img src={FACEBOOK_ICON} alt="" className="size-5" width={20} height={20} />
+                <FacebookIcon size={18} />
                 <span className="hidden sm:inline">Facebook</span>
               </button>
             </div>
@@ -157,17 +141,10 @@ export const ProjectliAuth = ({ onLogin }: { onLogin: () => void }) => {
         </div>
       </div>
 
-      {/* Right Panel - Imagem (largura restante); fallback = gradiente se a imagem não carregar */}
+      {/* Right Panel */}
       <div className="hidden lg:flex flex-col lg:w-[calc((100-var(--auth-form-width))*1%)] lg:min-w-0 relative overflow-hidden min-h-[30vh] lg:min-h-screen">
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#1a1d24] via-[#252a33] to-[#1e2229]" />
-        {!imageError && (
-          <img
-            src={PROJECTLI_AUTH_IMAGE}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            onError={() => setImageError(true)}
-          />
-        )}
+        <div className="absolute inset-0 bg-[#0d0f14]" />
+        <AuthBackground />
       </div>
     </div>
   );
