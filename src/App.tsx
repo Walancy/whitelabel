@@ -6,6 +6,7 @@ import { NexusDashboard } from './pages/nexus/NexusDashboard';
 import { NexusPayments } from './pages/nexus/NexusPayments';
 import { ShopeersDashboard } from './pages/shopeers/ShopeersDashboard';
 import { ProjectliDashboard } from './pages/projectli/ProjectliDashboard';
+import { MagikaDashboard } from './pages/magika/MagikaDashboard';
 import { UsersTablePage } from './pages/shared/UsersTablePage';
 
 export type AppPage = 'dashboard' | 'payments' | 'users';
@@ -35,6 +36,10 @@ function AppContent({ setIsLoggedIn }: { setIsLoggedIn: (v: boolean) => void }) 
 
     if (visualPattern === 'projectli') {
       return <div className="h-full"><ProjectliDashboard /></div>;
+    }
+
+    if (visualPattern === 'magika') {
+      return <div className="h-full"><MagikaDashboard /></div>;
     }
 
     return (

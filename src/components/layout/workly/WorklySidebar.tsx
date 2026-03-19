@@ -1,4 +1,4 @@
-import { useState, type ElementType } from 'react';
+import React, { useState, type ElementType } from 'react';
 import { 
   Home, 
   Bell, 
@@ -16,10 +16,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-utils';
 import type { SidebarNavProps } from '@/types/navigation';
 
 interface NavItemProps {
-  icon: ElementType;
+  icon: ElementType<{ size?: number; className?: string }>;
   label: string;
   active?: boolean;
   hasDropdown?: boolean;
@@ -27,23 +28,53 @@ interface NavItemProps {
   collapsed?: boolean;
 }
 
-const NavItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: NavItemProps) => (
-  <div className={cn(
-    "flex items-center gap-2.5 px-3 py-2 cursor-pointer transition-all relative group mb-0.5 min-h-[38px]",
-    active ? "workly-neon-active font-semibold overflow-hidden" : "rounded-lg text-muted-foreground hover:bg-[hsl(var(--workly-surface))] hover:text-foreground",
-    collapsed && "justify-center px-1"
-  )}>
-    <Icon size={18} className={cn("shrink-0 relative z-10 transition-colors", active ? "opacity-90" : "group-hover:text-foreground")} />
-    {!collapsed && (
-      <>
-        <span className={cn("text-xs font-semibold relative z-10 truncate flex-1")}>{label}</span>
-        {hasDropdown && (
-          <ChevronDown size={14} className={cn("transition-transform opacity-50", isOpen && "rotate-180", active && "opacity-100")} />
-        )}
-      </>
-    )}
-  </div>
-);
+const NavItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: NavItemProps) => {
+  const { dashboardConfig, theme } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
+  const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
+
+  const getIconColor = () => {
+    if (active) return sidebarActiveStyle === 'solid' ? 'text-primary-foreground' : 'text-primary';
+    if (sidebarIconColor === 'primary') return 'text-primary opacity-80 group-hover:opacity-100';
+    if (sidebarIconColor === 'background') return 'text-background opacity-70 group-hover:opacity-100';
+    return 'text-foreground opacity-70 group-hover:opacity-100';
+  };
+
+  const borderRgb = theme === 'dark' ? '255 255 255' : '0 0 0';
+  const activeBorderStyle: React.CSSProperties = active && !['minimal', 'workly-neon'].includes(sidebarActiveStyle)
+    ? { borderColor: `rgb(${borderRgb} / ${sidebarBorderOpacity / 100})` } : {};
+
+  return (
+    <div
+      className={cn(
+        'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
+        active
+          ? sidebarActiveStyle === 'workly-neon'
+            ? 'workly-neon-active font-semibold overflow-hidden'
+            : activeClass
+          : INACTIVE_SIDEBAR_CLASS,
+        collapsed && 'justify-center px-1'
+      )}
+      style={{
+        minHeight: `${sidebarBtnSize}px`,
+        paddingLeft: collapsed ? undefined : `${sidebarBtnGap}px`,
+        paddingRight: collapsed ? undefined : `${sidebarBtnGap}px`,
+        gap: `${sidebarBtnGap}px`,
+        ...activeBorderStyle
+      }}
+    >
+      <Icon size={18} className={cn("shrink-0 relative z-10 transition-colors", getIconColor())} />
+      {!collapsed && (
+        <div className="flex items-center justify-between w-full overflow-hidden">
+          <span className={cn("font-semibold relative z-10 truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
+          {hasDropdown && (
+            <ChevronDown size={14} className={cn("ml-2 transition-transform opacity-50 text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
@@ -58,7 +89,6 @@ export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
       "h-screen flex flex-col border-r border-border font-poppins text-foreground sticky top-0 transition-all duration-300 overflow-hidden",
       collapsed ? "w-20 px-2" : "w-64 px-3"
     )} style={chromeStyle}>
-      {/* Brand - Circular Toggle */}
       <div className={cn(
         "flex items-center h-16 border-b border-border shrink-0 mb-6 px-3 transition-all duration-300",
         collapsed ? "justify-center" : "justify-between"
@@ -87,7 +117,6 @@ export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
          </div>
       )}
 
-      {/* Navigation */}
       <nav className="flex-1 space-y-0.5 overflow-y-auto scrollbar-hide py-2 px-1">
         <NavItem icon={Home} label="Home" collapsed={collapsed} />
         <NavItem icon={Bell} label="Notifications" collapsed={collapsed} />

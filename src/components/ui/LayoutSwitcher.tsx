@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Palette, CheckCircle2, Sliders, Moon, Sun, 
   PanelLeft, PanelRight, Layers, Settings2, ChevronDown, 
-  Wand2, MousePointer2, ImageIcon
+  Wand2, MousePointer2, ImageIcon, Copy, Check as CheckIcon
 } from 'lucide-react';
 import { useTheme, type DashboardBgEffect, type SidebarActiveStyle } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -36,6 +36,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
 
   const [activeMenu, setActiveMenu] = useState<'visual' | 'color' | 'layout' | 'radius' | 'authbg' | 'form' | 'buttons' | 'dashbg' | null>(null);
   const [settingsMode, setSettingsMode] = useState<'none' | 'authbg'>('none');
+  const [copied, setCopied] = useState(false);
   const dockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -147,6 +148,86 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
     { name: 'Fuchsia', value: '292 84% 61%' },
     { name: 'Pink', value: '330 81% 60%' }
   ];
+
+  const patternNames: Record<string, string> = {
+    nexus: 'Nexus', shopeers: 'Shopeers', projectli: 'Projectli',
+    magika: 'Magika', workly: 'Workly', taskplus: 'Taskplus',
+    eevo: 'Eevo', quantum: 'Quantum', resync: 'ReSync',
+  };
+
+  const accentColorName = presetColors.find(c => c.value === accentColor)?.name ?? 'Custom';
+
+  const buildConfigPrompt = useCallback((): string => {
+    const dc = dashboardConfig;
+    const accentHsl = `hsl(${activeAccentColor})`;
+    const lines: string[] = [
+      '# Configuração Atual do Sistema Whitelabel',
+      '',
+      '## Visão Geral',
+      `- Layout Visual: **${patternNames[visualPattern] ?? visualPattern}**`,
+      `- Tema: **${theme === 'dark' ? 'Dark Mode' : 'Light Mode'}**`,
+      `- Cor Accent: **${accentColorName}** (${accentHsl})`,
+      `- Usar Cor Destaque Personalizada: **${useCustomAccent ? 'Sim' : 'Não'}**`,
+      `- Border Radius Global: **${borderRadius}%**`,
+      `- Sombras Globais: **${showShadows ? 'Ativadas' : 'Desativadas'}**`,
+      '',
+      '## Sidebar / Navegação',
+      `- Estilo do Botão Ativo: **${dc.sidebarActiveStyle}**`,
+      `- Tamanho do Botão: **${dc.sidebarBtnSize}px**`,
+      `- Espaçamento (Gap): **${dc.sidebarBtnGap}px**`,
+      `- Cor dos Ícones Inativos: **${dc.sidebarIconColor}**`,
+      `- Cor do Texto Ativo: **${dc.sidebarActiveTextColor}**`,
+      `- Opacidade da Borda: **${dc.sidebarBorderOpacity}%**`,
+      '',
+      '## Background do Dashboard',
+      `- Efeito Animado: **${dc.bgEffect === 'none' ? 'Nenhum' : dc.bgEffect}**`,
+      `- Degradê Radial: **${dc.bgGradientEnabled ? 'Ativado' : 'Desativado'}**`,
+      ...(dc.bgGradientEnabled ? [
+        `  - Cor: hsl(${dc.bgGradientColor})`,
+        `  - Opacidade: ${dc.bgGradientOpacity}%`,
+        `  - Tamanho: ${dc.bgGradientSize}%`,
+        `  - Posição: X=${dc.bgGradientX}% Y=${dc.bgGradientY}%`,
+      ] : []),
+      '',
+      '## Header & Sidebar Chrome',
+      `- Opacidade: **${dc.chromeOpacity}%**`,
+      `- Backdrop Blur: **${dc.chromeBlur ? `${dc.chromeBlurIntensity}px` : 'Desativado'}**`,
+      '',
+      '## Cards do Dashboard',
+      `- Opacidade: **${dc.cardOpacity}%**`,
+      `- Backdrop Blur: **${dc.cardBlur ? `${dc.cardBlurIntensity}px` : 'Desativado'}**`,
+      `- Degradê nos Cards: **${dc.cardGradientEnabled ? 'Ativado' : 'Desativado'}**`,
+      ...(dc.cardGradientEnabled ? [
+        `  - Usar Accent: ${dc.cardGradientUseAccent ? 'Sim' : 'Não'}`,
+        `  - Cor: hsl(${dc.cardGradientColor})`,
+        `  - Opacidade: ${dc.cardGradientOpacity}%`,
+      ] : []),
+      '',
+      '---',
+      '',
+      '## Instrução para a IA',
+      '',
+      `Você é um assistente de desenvolvimento trabalhando no projeto Whitelabel.`,
+      `O sistema possui múltiplos layouts visuais (Nexus, Shopeers, Projectli, Magika, Workly, Taskplus, Eevo, Quantum, ReSync).`,
+      `**O usuário selecionou o layout: ${patternNames[visualPattern] ?? visualPattern}.**`,
+      ``,
+      `Com base na configuração acima, ao gerar código ou fazer alterações:`,
+      `1. Utilize o layout **${patternNames[visualPattern] ?? visualPattern}** como referência principal.`,
+      `2. A cor accent ativa é ${accentHsl} — use-a em elementos de destaque.`,
+      `3. O tema ativo é **${theme}** — garanta contraste adequado.`,
+      `4. Respeite as configurações de sidebar, cards e background descritas acima.`,
+      `5. Não hardcode cores — use as variáveis CSS (--primary, --accent, --foreground, etc.).`,
+    ];
+    return lines.join('\n');
+  }, [visualPattern, theme, accentColor, activeAccentColor, accentColorName, useCustomAccent,
+      borderRadius, showShadows, dashboardConfig, patternNames]);
+
+  const handleCopyPrompt = useCallback(async () => {
+    const prompt = buildConfigPrompt();
+    await navigator.clipboard.writeText(prompt);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [buildConfigPrompt]);
 
   return (
     <div ref={dockRef} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center select-none font-sans">
@@ -741,6 +822,23 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
             </button>
            </>
         )}
+
+        <div className="w-px h-5 bg-white/10 mx-0.5" />
+
+        {/* Copy Config Prompt */}
+        <button
+          onClick={handleCopyPrompt}
+          className={cn(
+            "h-8 px-2.5 flex items-center justify-center gap-1.5 rounded-lg transition-all text-[10px] font-semibold",
+            copied
+              ? "bg-green-500/20 text-green-400"
+              : "hover:bg-white/10 text-white/60 hover:text-white"
+          )}
+          title="Copiar prompt com a configuração atual"
+        >
+          {copied ? <CheckIcon size={14} /> : <Copy size={14} />}
+          {copied ? 'Copiado!' : 'Prompt'}
+        </button>
 
         <div className="w-px h-5 bg-white/10 mx-0.5" />
 

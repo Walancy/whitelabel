@@ -1,4 +1,4 @@
-import type { ElementType } from 'react';
+import React, { type ElementType } from 'react';
 import { 
   CheckCircle2, 
   Zap, 
@@ -20,7 +20,7 @@ import { useState } from 'react';
 import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
-  icon: ElementType;
+  icon: ElementType<{ size?: number; className?: string }>;
   label: string;
   badge?: string;
   hasSubmenu?: boolean;
@@ -31,33 +31,49 @@ interface SidebarItemProps {
 }
 
 const SidebarItem = ({ icon: Icon, label, badge, hasSubmenu, isOpen, isSubmenu, active, collapsed }: SidebarItemProps) => {
-  const { dashboardConfig } = useTheme();
-  const { sidebarActiveStyle, sidebarActiveTextColor } = dashboardConfig;
+  const { dashboardConfig, theme } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
   const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
+
+  const getIconColor = () => {
+    if (active) return sidebarActiveStyle === 'solid' ? 'text-primary-foreground' : 'text-primary';
+    if (sidebarIconColor === 'primary') return 'text-primary opacity-80 group-hover:opacity-100';
+    if (sidebarIconColor === 'background') return 'text-background opacity-70 group-hover:opacity-100';
+    return 'text-foreground opacity-70 group-hover:opacity-100';
+  };
+
+  const borderRgb = theme === 'dark' ? '255 255 255' : '0 0 0';
+  const activeBorderStyle: React.CSSProperties = active && !['minimal', 'workly-neon'].includes(sidebarActiveStyle)
+    ? { borderColor: `rgb(${borderRgb} / ${sidebarBorderOpacity / 100})` } : {};
+
   return (
-    <div className={cn(
-      'flex items-center justify-between px-3 py-2.5 rounded-[var(--radius)] cursor-pointer transition-all group min-h-[44px] mb-0.5',
-      active ? activeClass : INACTIVE_SIDEBAR_CLASS,
-      isSubmenu && 'py-1.5 text-[12px] opacity-80',
-      collapsed && 'justify-center px-1'
-    )}>
-      <div className="flex items-center gap-3 overflow-hidden">
-        <Icon size={isSubmenu ? 14 : 18} className={cn("transition-colors shrink-0", active ? "text-primary-foreground font-bold" : "text-muted-foreground group-hover:text-foreground")} />
-        {!collapsed && <span className={cn("text-xs font-semibold transition-colors truncate", active ? "text-primary-foreground" : "text-foreground")}>{label}</span>}
-      </div>
+    <div
+      className={cn(
+        'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
+        active ? activeClass : INACTIVE_SIDEBAR_CLASS,
+        isSubmenu ? 'ml-4 pl-8 py-1.5 text-[12px] rounded-none border-l border-border bg-transparent !border-transparent min-h-0' : '',
+        collapsed && 'justify-center px-1'
+      )}
+      style={!isSubmenu ? {
+        minHeight: `${sidebarBtnSize}px`,
+        paddingLeft: collapsed ? undefined : `${sidebarBtnGap}px`,
+        paddingRight: collapsed ? undefined : `${sidebarBtnGap}px`,
+        gap: `${sidebarBtnGap}px`,
+        ...activeBorderStyle
+      } : {}}
+    >
+      <Icon size={isSubmenu ? 14 : 18} className={cn("shrink-0 transition-colors z-10 relative", getIconColor())} />
       {!collapsed && (
-        <div className="flex items-center gap-2 shrink-0">
-          {badge && (
-            <span className={cn(
-              "text-[10px] font-semibold px-2 py-0.5 rounded-full bg-muted border border-border text-muted-foreground",
-              active && "bg-primary-foreground text-primary border-transparent"
-            )}>
-              {badge}
-            </span>
-          )}
-          {hasSubmenu && (
-             <ChevronDown size={14} className={cn("transition-transform opacity-50", isOpen && "rotate-180", active && "text-primary-foreground opacity-100")} />
-          )}
+        <div className="flex items-center justify-between w-full overflow-hidden">
+          <span className={cn("font-semibold truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
+          <div className="flex items-center shrink-0">
+            {badge && (
+              <span className={cn("text-[9px] font-semibold px-1.5 py-0.5 rounded-full ml-2", active ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground")}>{badge}</span>
+            )}
+            {hasSubmenu && (
+              <ChevronDown size={14} className={cn("ml-2 opacity-50 transition-transform text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
+            )}
+          </div>
         </div>
       )}
     </div>

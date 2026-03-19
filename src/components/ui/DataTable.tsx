@@ -7,6 +7,44 @@ import {
 import { cn } from '@/lib/utils';
 import { useCardStyle } from '@/context/ThemeContext';
 
+// ─── Checkbox ─────────────────────────────────────────────────────────────────
+interface TableCheckboxProps {
+  checked: boolean;
+  indeterminate?: boolean;
+  onChange: () => void;
+  label: string;
+}
+
+function TableCheckbox({ checked, indeterminate, onChange, label }: TableCheckboxProps) {
+  return (
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={indeterminate ? 'mixed' : checked}
+      aria-label={label}
+      onClick={onChange}
+      className={cn(
+        'relative w-[14px] !h-[14px] shrink-0 rounded-[3px] border transition-all duration-150 flex items-center justify-center outline-none',
+        'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1',
+        checked || indeterminate
+          ? 'border-primary bg-primary'
+          : 'border-border bg-transparent hover:border-primary/60'
+      )}
+    >
+      {indeterminate && !checked && (
+        <span className="block w-[7px] h-[1.5px] rounded-full bg-primary-foreground" />
+      )}
+      {checked && (
+        <Check
+          size={9}
+          strokeWidth={3}
+          className="text-primary-foreground animate-in zoom-in-50 duration-100"
+        />
+      )}
+    </button>
+  );
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type SortDir = 'asc' | 'desc' | null;
 export type TableVariant =
@@ -42,20 +80,12 @@ interface DataTableProps<T extends { id: string | number }> {
 
 // ─── Variant Helpers ──────────────────────────────────────────────────────────
 function getVariantClasses(variant: TableVariant) {
-  const base = {
-    wrapper: '',
-    thead: '',
-    th: '',
-    tr: '',
-    td: '',
-  };
-
   switch (variant) {
     case 'minimal':
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden',
         thead: 'bg-transparent border-b-2 border-border',
-        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-2',
+        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-1.5',
         tr: 'border-b border-border/30 hover:bg-accent/20 transition-colors',
         td: 'px-4 py-2',
       };
@@ -63,7 +93,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden',
         thead: 'bg-primary/8',
-        th: 'text-[10px] font-semibold text-foreground uppercase tracking-wider px-3 py-2.5',
+        th: 'text-[10px] font-semibold text-foreground uppercase tracking-wider px-3 py-1.5',
         tr: 'odd:bg-transparent even:bg-accent/20 hover:bg-primary/5 transition-colors',
         td: 'px-3 py-2',
       };
@@ -71,7 +101,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden border border-border',
         thead: 'bg-accent/30',
-        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2.5 border-r border-border last:border-r-0',
+        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1.5 border-r border-border last:border-r-0',
         tr: 'border-b border-border hover:bg-accent/30 transition-colors',
         td: 'px-3 py-2 border-r border-border/50 last:border-r-0',
       };
@@ -79,7 +109,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden',
         thead: 'bg-primary/10',
-        th: 'text-[10px] font-semibold text-primary uppercase tracking-wider px-4 py-3 first:rounded-tl-[var(--radius)] last:rounded-tr-[var(--radius)]',
+        th: 'text-[10px] font-semibold text-primary uppercase tracking-wider px-4 py-1.5 first:rounded-tl-[var(--radius)] last:rounded-tr-[var(--radius)]',
         tr: 'mb-1 hover:bg-primary/5 transition-colors rounded-[var(--radius)]',
         td: 'px-4 py-2.5',
       };
@@ -87,7 +117,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden',
         thead: 'bg-accent/40',
-        th: 'text-[9px] font-semibold text-muted-foreground uppercase tracking-widest px-2 py-1.5',
+        th: 'text-[9px] font-semibold text-muted-foreground uppercase tracking-widest px-2 py-1',
         tr: 'border-b border-border/20 hover:bg-accent/20 transition-colors',
         td: 'px-2 py-1',
       };
@@ -95,7 +125,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden',
         thead: 'bg-primary/15',
-        th: 'text-[10px] font-semibold text-primary uppercase tracking-wider px-4 py-3',
+        th: 'text-[10px] font-semibold text-primary uppercase tracking-wider px-4 py-1.5',
         tr: 'border-b border-border/20 hover:bg-primary/5 transition-colors',
         td: 'px-4 py-2.5',
       };
@@ -103,7 +133,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden ring-1 ring-primary/30',
         thead: 'bg-primary/10 border-b border-primary/20',
-        th: 'text-[10px] font-semibold text-primary uppercase tracking-wider px-3 py-2.5',
+        th: 'text-[10px] font-semibold text-primary uppercase tracking-wider px-3 py-1.5',
         tr: 'border-b border-primary/10 hover:bg-primary/5 transition-colors',
         td: 'px-3 py-2',
       };
@@ -111,7 +141,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden',
         thead: 'border-b-2 border-border',
-        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-2 first:pl-0 last:pr-0',
+        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-1.5 first:pl-0 last:pr-0',
         tr: 'border-b border-border/20 hover:bg-accent/10 transition-colors last:border-b-0',
         td: 'px-4 py-2 first:pl-0 last:pr-0',
       };
@@ -119,7 +149,7 @@ function getVariantClasses(variant: TableVariant) {
       return {
         wrapper: 'rounded-[var(--radius)] overflow-hidden',
         thead: 'border-b border-border',
-        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-2.5',
+        th: 'text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-3 py-1.5',
         tr: 'border-b border-border/50 hover:bg-accent/30 transition-colors',
         td: 'px-3 py-2 text-foreground',
       };
@@ -270,15 +300,13 @@ export function DataTable<T extends { id: string | number }>({
           <table className="w-full border-collapse" role="grid">
             <thead className={cn("sticky top-0 z-10", vc.thead)} style={cardStyle}>
               <tr>
-                <th className="w-10 px-3 py-2.5">
-                  <button
-                    onClick={toggleAll}
-                    className="w-4 h-4 rounded-[calc(var(--radius)/2)] border border-border flex items-center justify-center transition-all hover:border-primary"
-                    style={allSelected ? { backgroundColor: 'hsl(var(--primary))', borderColor: 'hsl(var(--primary))' } : {}}
-                    aria-label="Selecionar todos"
-                  >
-                    {allSelected && <Check size={10} className="text-primary-foreground" />}
-                  </button>
+                <th className="w-8 px-2.5 py-1.5">
+                  <TableCheckbox
+                    checked={allSelected}
+                    indeterminate={selected.size > 0 && !allSelected}
+                    onChange={toggleAll}
+                    label="Selecionar todos"
+                  />
                 </th>
                 {columns.map(col => (
                   <th
@@ -289,7 +317,7 @@ export function DataTable<T extends { id: string | number }>({
                     {col.sortable ? (
                       <button
                         onClick={() => handleSort(col.key)}
-                        className="flex items-center gap-1 hover:text-foreground transition-colors group"
+                        className="flex items-center gap-1 !h-auto hover:text-foreground transition-colors group"
                         aria-label={`Ordenar por ${col.label}`}
                       >
                         {col.label}
@@ -301,7 +329,7 @@ export function DataTable<T extends { id: string | number }>({
                     ) : col.label}
                   </th>
                 ))}
-                {rowActions && <th className="w-16 px-3 py-2.5" />}
+                {rowActions && <th className="w-16 px-3 py-1.5" />}
               </tr>
             </thead>
             <tbody>
@@ -321,14 +349,12 @@ export function DataTable<T extends { id: string | number }>({
                     selected.has(row.id) && 'bg-primary/5'
                   )}
                 >
-                  <td className="w-10 px-3 py-2" onClick={e => { e.stopPropagation(); toggleOne(row.id); }}>
-                    <button
-                      className="w-4 h-4 rounded-[calc(var(--radius)/2)] border border-border flex items-center justify-center transition-all hover:border-primary"
-                      style={selected.has(row.id) ? { backgroundColor: 'hsl(var(--primary))', borderColor: 'hsl(var(--primary))' } : {}}
-                      aria-label="Selecionar linha"
-                    >
-                      {selected.has(row.id) && <Check size={10} className="text-primary-foreground" />}
-                    </button>
+                  <td className="w-8 px-2.5 py-2" onClick={e => { e.stopPropagation(); toggleOne(row.id); }}>
+                    <TableCheckbox
+                      checked={selected.has(row.id)}
+                      onChange={() => toggleOne(row.id)}
+                      label="Selecionar linha"
+                    />
                   </td>
                   {columns.map(col => (
                     <td key={String(col.key)} className={vc.td}>

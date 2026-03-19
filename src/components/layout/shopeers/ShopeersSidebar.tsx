@@ -1,4 +1,4 @@
-import { useState, type ElementType } from 'react';
+import React, { useState, type ElementType } from 'react';
 import { 
   ChevronDown, 
   Compass, 
@@ -20,7 +20,7 @@ import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-uti
 import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
-  icon: ElementType;
+  icon: ElementType<{ size?: number; className?: string }>;
   label: string;
   badge?: string | number;
   active?: boolean;
@@ -31,30 +31,48 @@ interface SidebarItemProps {
 }
 
 const SidebarItem = ({ icon: Icon, label, badge, active, hasSubmenu, isOpen, isSubmenu, collapsed }: SidebarItemProps) => {
-  const { dashboardConfig } = useTheme();
-  const { sidebarActiveStyle, sidebarActiveTextColor } = dashboardConfig;
+  const { dashboardConfig, theme } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
   const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
+
+  const getIconColor = () => {
+    if (active) return sidebarActiveStyle === 'solid' ? 'text-primary-foreground' : 'text-primary';
+    if (sidebarIconColor === 'primary') return 'text-primary opacity-80 group-hover:opacity-100';
+    if (sidebarIconColor === 'background') return 'text-background opacity-70 group-hover:opacity-100';
+    return 'text-foreground opacity-70 group-hover:opacity-100';
+  };
+
+  const borderRgb = theme === 'dark' ? '255 255 255' : '0 0 0';
+  const activeBorderStyle: React.CSSProperties = active && !['minimal', 'workly-neon'].includes(sidebarActiveStyle)
+    ? { borderColor: `rgb(${borderRgb} / ${sidebarBorderOpacity / 100})` } : {};
+
   return (
-    <div className={cn(
-      'flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5 min-h-[44px]',
-      active ? activeClass : INACTIVE_SIDEBAR_CLASS,
-      isSubmenu && !collapsed && 'ml-4 pl-8 py-2 text-[13px] rounded-none border-l border-border',
-      collapsed && 'justify-center px-1'
-    )}>
-      <Icon size={isSubmenu ? 16 : 18} className={cn("shrink-0 transition-colors", active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
+    <div
+      className={cn(
+        'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
+        active ? activeClass : INACTIVE_SIDEBAR_CLASS,
+        isSubmenu ? 'ml-4 pl-8 py-1.5 text-[12px] rounded-none border-l border-border bg-transparent !border-transparent min-h-0' : '',
+        collapsed && 'justify-center px-1'
+      )}
+      style={!isSubmenu ? {
+        minHeight: `${sidebarBtnSize}px`,
+        paddingLeft: collapsed ? undefined : `${sidebarBtnGap}px`,
+        paddingRight: collapsed ? undefined : `${sidebarBtnGap}px`,
+        gap: `${sidebarBtnGap}px`,
+        ...activeBorderStyle
+      } : {}}
+    >
+      <Icon size={isSubmenu ? 14 : 18} className={cn("shrink-0 transition-colors z-10 relative", getIconColor())} />
       {!collapsed && (
         <>
-          <span className={cn("text-xs font-semibold flex-1 tracking-tight truncate", active ? "text-primary-foreground" : "text-foreground")}>{label}</span>
+          <span className={cn("font-semibold truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
           {badge && (
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-[10px] font-semibold", 
-              active ? "bg-primary-foreground text-primary border border-transparent" : "bg-muted"
-            )}>
+            <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-semibold ml-2", active ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground")}>
               {badge}
             </span>
           )}
           {hasSubmenu && (
-            <ChevronDown size={14} className={cn("opacity-50 transition-transform", isOpen && "rotate-180", active && "text-primary-foreground opacity-100")} />
+            <ChevronDown size={14} className={cn("ml-2 opacity-50 transition-transform text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
           )}
         </>
       )}

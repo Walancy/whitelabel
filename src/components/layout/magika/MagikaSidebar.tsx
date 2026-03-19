@@ -1,4 +1,4 @@
-import { useState, type ElementType } from 'react';
+import React, { useState, type ElementType } from 'react';
 import { 
   Home, 
   LayoutGrid, 
@@ -10,15 +10,15 @@ import {
   Plus,
   ChevronDown,
   Grid,
-  Menu,
-  X
+  Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-utils';
 import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
-  icon: ElementType;
+  icon: ElementType<{ size?: number; className?: string }>;
   label: string;
   badge?: string | number;
   active?: boolean;
@@ -27,30 +27,54 @@ interface SidebarItemProps {
   isOpen?: boolean;
 }
 
-const SidebarItem = ({ icon: Icon, label, badge, active, collapsed, hasDropdown, isOpen }: SidebarItemProps) => (
-  <div className={cn(
-    "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all relative group mb-1 min-h-[44px]",
-    active 
-      ? "bg-primary text-primary-foreground font-semibold shadow-sm" 
-      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-  )}>
-    <Icon size={18} className={cn("transition-colors shrink-0", active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
-    {!collapsed && (
-      <>
-        <span className={cn("text-xs font-semibold flex-1 tracking-tight truncate", active ? "text-primary-foreground" : "text-foreground")}>{label}</span>
-        {badge && (
-          <span className={cn(
-            "px-1.5 py-0.5 rounded-full text-[10px] font-bold",
-            active ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground"
-          )}>{badge}</span>
-        )}
-        {hasDropdown && (
-          <ChevronDown size={14} className={cn("transition-transform opacity-50", isOpen && "rotate-180", active && "text-primary-foreground opacity-100")} />
-        )}
-      </>
-    )}
-  </div>
-);
+const SidebarItem = ({ icon: Icon, label, badge, active, collapsed, hasDropdown, isOpen }: SidebarItemProps) => {
+  const { dashboardConfig, theme } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
+  const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
+
+  const getIconColor = () => {
+    if (active) return sidebarActiveStyle === 'solid' ? 'text-primary-foreground' : 'text-primary';
+    if (sidebarIconColor === 'primary') return 'text-primary opacity-80 group-hover:opacity-100';
+    if (sidebarIconColor === 'background') return 'text-background opacity-70 group-hover:opacity-100';
+    return 'text-foreground opacity-70 group-hover:opacity-100';
+  };
+
+  const borderRgb = theme === 'dark' ? '255 255 255' : '0 0 0';
+  const activeBorderStyle: React.CSSProperties = active && !['minimal', 'workly-neon'].includes(sidebarActiveStyle)
+    ? { borderColor: `rgb(${borderRgb} / ${sidebarBorderOpacity / 100})` } : {};
+
+  return (
+    <div
+      className={cn(
+        'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
+        active ? activeClass : INACTIVE_SIDEBAR_CLASS,
+        collapsed && 'justify-center px-1'
+      )}
+      style={{
+        minHeight: `${sidebarBtnSize}px`,
+        paddingLeft: collapsed ? undefined : `${sidebarBtnGap}px`,
+        paddingRight: collapsed ? undefined : `${sidebarBtnGap}px`,
+        gap: `${sidebarBtnGap}px`,
+        ...activeBorderStyle
+      }}
+    >
+      <Icon size={18} className={cn("shrink-0 transition-colors z-10 relative", getIconColor())} />
+      {!collapsed && (
+        <div className="flex items-center justify-between w-full overflow-hidden">
+          <span className={cn("font-semibold truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
+          <div className="flex items-center shrink-0">
+            {badge && (
+              <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-semibold ml-2", active ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground")}>{badge}</span>
+            )}
+            {hasDropdown && (
+              <ChevronDown size={14} className={cn("ml-2 opacity-50 transition-transform text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const MagikaSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const [collapsed, setCollapsed] = useState(false);

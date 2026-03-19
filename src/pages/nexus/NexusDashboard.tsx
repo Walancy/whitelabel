@@ -14,9 +14,14 @@ import {
   Share2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
-import { useTheme } from '@/context/ThemeContext';
+import { useState, type ReactNode } from 'react';
+import { useCardStyle, useTheme } from '@/context/ThemeContext';
 import { hslToHex } from '@/lib/color-utils';
+
+const useAccentHex = () => {
+  const { activeAccentColor } = useTheme();
+  return hslToHex(activeAccentColor);
+};
 
 type ChatMessage = {
   id: number;
@@ -29,6 +34,7 @@ type ChatMessage = {
 };
 
 export const NexusDashboard = () => {
+  const accentHex = useAccentHex();
   const [chatInput, setChatInput] = useState('');
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -128,9 +134,9 @@ export const NexusDashboard = () => {
                    {/* Refined Horizontal Bar (Compact & Thick) */}
                    <div className="h-[22px] w-full flex items-center overflow-hidden rounded-[2px]">
                      <div className="h-full w-4 bg-foreground" />
-                     <div className="h-full w-1.5 bg-[#7eedaa]" />
+                     <div style={{ backgroundColor: accentHex }} className="h-full w-1.5" />
                      <div className="h-full flex-1 bg-muted-foreground/10" />
-                     <div className="h-full w-px bg-[#7eedaa]" />
+                     <div style={{ backgroundColor: accentHex }} className="h-full w-px" />
                      <div className="flex justify-evenly items-center h-full w-[28%] pl-[1px] pr-[2px] bg-card border-y border-r border-border/40">
                        {Array.from({length: 40}).map((_, i) => (
                          <div key={i} className="h-full w-[1px] bg-border max-h-[60%] shrink-0 opacity-60" />
@@ -162,11 +168,11 @@ export const NexusDashboard = () => {
                      <path d="M 15 100 A 85 85 0 0 1 185 100" pathLength="100" fill="none" stroke="currentColor" className="text-muted-foreground/30" strokeWidth="6" strokeLinecap="round" strokeDasharray="0 0 18 100" />
                      <path d="M 15 100 A 85 85 0 0 1 185 100" pathLength="100" fill="none" stroke="currentColor" className="text-muted-foreground/30" strokeWidth="6" strokeLinecap="round" strokeDasharray="0 21.5 33 100" />
                      <path d="M 15 100 A 85 85 0 0 1 185 100" pathLength="100" fill="none" stroke="currentColor" className="text-foreground" strokeWidth="9" strokeLinecap="round" strokeDasharray="0 58 17 100" />
-                     <circle cx="160.1" cy="39.9" r="4.5" fill="#7eedaa" stroke="hsl(var(--card))" strokeWidth="2.5" />
+                     <circle cx="160.1" cy="39.9" r="4.5" fill={accentHex} stroke="hsl(var(--card))" strokeWidth="2.5" />
                    </svg>
 
                    {/* Centered Value inside Arc */}
-                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[40px] sm:text-[44px] font-medium tracking-tight z-10 px-6 sm:px-8 py-0 flex items-start justify-center bg-card">
+                   <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[40px] sm:text-[44px] font-medium tracking-tight z-10 px-2 py-0 flex items-start justify-center">
                      71,74<span className="text-lg sm:text-xl font-normal text-foreground mt-1 ml-0.5">%</span>
                    </div>
                  </div>
@@ -198,10 +204,10 @@ export const NexusDashboard = () => {
                    
                    {/* Refined Horizontal Bar (Compact & Thick) */}
                    <div className="h-[22px] w-full flex items-center overflow-hidden rounded-[2px]">
-                     <div className="h-full w-4 bg-[#7eedaa]" />
+                     <div style={{ backgroundColor: accentHex }} className="h-full w-4" />
                      <div className="h-full w-1.5 bg-foreground" />
                      <div className="h-full flex-1 bg-muted-foreground/10" />
-                     <div className="h-full w-px bg-[#7eedaa]" />
+                     <div style={{ backgroundColor: accentHex }} className="h-full w-px" />
                      <div className="flex justify-evenly items-center h-full w-[45%] pl-[1px] pr-[2px] bg-card border-y border-r border-border/40">
                        {Array.from({length: 60}).map((_, i) => (
                          <div key={i} className="h-full w-[1px] bg-border max-h-[60%] shrink-0 opacity-60" />
@@ -248,27 +254,24 @@ export const NexusDashboard = () => {
 
               {/* Flexible Chart Box (Interactive) */}
               <div className="flex-1 w-full mt-auto pt-4 flex items-end gap-[1.5px] relative min-h-0">
-                <div className="absolute bottom-0 left-0 w-full h-px bg-border" />
-                {/* SVG Line mockup overlay */}
-                <div className="absolute inset-0 z-10 pointer-events-none">
-                   <svg viewBox="0 0 100 40" className="w-full h-full preserve-3d" preserveAspectRatio="none">
-                     <path d="M0,30 Q10,25 20,28 T30,26 T40,26 T50,27 T60,28 T80,31 T100,32" fill="none" stroke="hsl(var(--foreground))" strokeWidth="0.8" />
-                   </svg>
-                </div>
+
                 {Array.from({length: 80}).map((_, i) => (
                   <div 
                     key={i} 
                     className={cn(
-                      "flex-1 rounded-t-[1px] relative transition-all duration-300 hover:bg-[#7eedaa] cursor-none", 
+                      "flex-1 rounded-t-[1px] relative transition-all duration-300 cursor-none", 
                       i > 20 && i < 45 ? "bg-foreground w-[2px] group-hover:opacity-80" : "bg-border w-px group-hover:bg-muted-foreground/30"
-                    )} 
-                    style={{ height: `${(i > 20 && i < 45) ? (30 + Math.random()*40) : (10 + Math.random()*15)}%`}} 
+                    )}
+                    style={{
+                      height: `${(i > 20 && i < 45) ? (30 + Math.random()*40) : (10 + Math.random()*15)}%`,
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = accentHex)}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                   >
-                     {/* Highlight specific bars green initially */}
-                     {i === 28 || i === 31 ? <div className="absolute inset-0 bg-[#7eedaa] rounded-t-[1px]" /> : null}
+                     {(i === 28 || i === 31) && <div className="absolute inset-0 rounded-t-[1px]" style={{ backgroundColor: accentHex }} />}
                   </div>
                 ))}
-                <div className="absolute bottom-[-10px] h-[calc(100%+10px)] w-px bg-[#7eedaa] left-[55%] pointer-events-none" />
+                <div className="absolute bottom-[-10px] h-[calc(100%+10px)] w-px left-[55%] pointer-events-none" style={{backgroundColor:accentHex}} />
               </div>
               <div className="flex justify-between text-[10px] text-muted-foreground mt-2 font-semibold shrink-0">
                 <span>Jun</span>
@@ -309,24 +312,19 @@ export const NexusDashboard = () => {
 
               {/* Flexible Chart Box (Interactive) */}
               <div className="flex-1 w-full mt-auto pt-4 flex items-end gap-[1.5px] relative min-h-0">
-                <div className="absolute bottom-0 left-0 w-full h-px bg-border" />
-                {/* SVG Line mockup overlay */}
-                <div className="absolute inset-0 z-10 pointer-events-none">
-                   <svg viewBox="0 0 100 40" className="w-full h-full preserve-3d" preserveAspectRatio="none">
-                     <path d="M0,35 Q10,32 20,29 T30,28 T40,25 T50,23 T60,26 T80,30 T100,32" fill="none" stroke="hsl(var(--foreground))" strokeWidth="0.8" />
-                   </svg>
-                </div>
                 {Array.from({length: 80}).map((_, i) => (
                   <div 
                     key={i} 
                     className={cn(
-                      "flex-1 rounded-t-[1px] relative transition-all duration-300 hover:bg-[#7eedaa] cursor-none", 
+                      "flex-1 rounded-t-[1px] relative transition-all duration-300 cursor-none", 
                       Math.random() > 0.6 ? "bg-foreground w-[2px] group-hover:opacity-80" : "bg-border w-px group-hover:bg-muted-foreground/30"
                     )} 
-                    style={{ height: `${20 + Math.random()*25}%`}} 
+                    style={{ height: `${20 + Math.random()*25}%`}}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = accentHex)}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '')}
                   />
                 ))}
-                <div className="absolute bottom-[-10px] h-[calc(100%+10px)] w-px bg-[#7eedaa] left-[80%] pointer-events-none" />
+                <div className="absolute bottom-[-10px] h-[calc(100%+10px)] w-px left-[80%] pointer-events-none" style={{backgroundColor:accentHex}} />
               </div>
               <div className="flex justify-between text-[10px] text-muted-foreground mt-2 font-semibold shrink-0">
                 <span>Jun</span>
@@ -374,8 +372,8 @@ export const NexusDashboard = () => {
                       <img src="https://i.pravatar.cc/150?u=jordan" alt="Avatar" className="w-full h-full object-cover" />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 rounded-[10px] bg-[#9cfab9] shrink-0 flex items-center justify-center relative overflow-hidden">
-                      <SparklesIcon color="#000" />
+                    <div className="w-8 h-8 rounded-[10px] shrink-0 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: accentHex }}>
+                      <SparklesIcon color="#fff" />
                     </div>
                   )}
 
@@ -393,7 +391,7 @@ export const NexusDashboard = () => {
                     {msg.file && (
                       <div className="flex justify-between items-end mt-2">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-card w-fit cursor-pointer shadow-sm">
-                          <FileText size={16} className="text-[#3b9f62]" strokeWidth={1.5} />
+                          <FileText size={16} strokeWidth={1.5} style={{ color: accentHex }} />
                           <div className="w-4 h-5 -ml-3 bg-foreground rounded-sm flex items-center justify-center shrink-0 border border-card shadow-sm z-10">
                             <div className="w-2.5 h-[1px] bg-background mt-1" />
                           </div>
@@ -416,10 +414,10 @@ export const NexusDashboard = () => {
                         </ul>
                         {/* Mini Stacked Bar */}
                         <div className="h-4 w-full flex items-center gap-[1px]">
-                           <div className="h-full w-4 bg-[#7eedaa] rounded-l-[1px]" />
+                           <div className="h-full w-4 rounded-l-[1px]" style={{backgroundColor:accentHex}} />
                            <div className="h-full w-8 bg-foreground" />
                            <div className="h-full flex-1 bg-muted-foreground/15" />
-                           <div className="h-[120%] w-px bg-[#7eedaa]" />
+                           <div className="h-[120%] w-px" style={{backgroundColor:accentHex}} />
                            <div className="flex justify-end items-center gap-[2px] h-full w-[25%] pl-1">
                              {Array.from({length: 12}).map((_, i) => (
                                <div key={i} className="h-full w-px bg-border max-h-[70%]" />
@@ -481,19 +479,8 @@ const SparklesIcon = ({ color = "currentColor" }: { color?: string }) => (
   </svg>
 );
 
-const DashboardCard = ({ title, icon, children, className, showLink = true, customAction }: { title?: string, icon?: React.ReactNode, children: React.ReactNode, className?: string, showLink?: boolean, customAction?: React.ReactNode }) => {
-  const { dashboardConfig } = useTheme();
-  const { cardOpacity, cardBlur, cardBlurIntensity, cardGradientEnabled, cardGradientColor, cardGradientOpacity } = dashboardConfig;
-
-  const gradHex = cardGradientEnabled && cardGradientColor ? hslToHex(cardGradientColor) : null;
-  const gradAlpha = Math.round((cardGradientOpacity / 100) * 255).toString(16).padStart(2, '0');
-
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: `hsl(var(--card) / ${cardOpacity / 100})`,
-    backdropFilter: cardBlur ? `blur(${cardBlurIntensity}px)` : undefined,
-    WebkitBackdropFilter: cardBlur ? `blur(${cardBlurIntensity}px)` : undefined,
-    ...(gradHex ? { backgroundImage: `radial-gradient(ellipse 80% 80% at 0% 0%, ${gradHex}${gradAlpha}, transparent 70%)` } : {}),
-  };
+const DashboardCard = ({ title, icon, children, className, showLink = true, customAction }: { title?: string, icon?: ReactNode, children: ReactNode, className?: string, showLink?: boolean, customAction?: ReactNode }) => {
+  const cardStyle = useCardStyle();
 
   return (
     <div

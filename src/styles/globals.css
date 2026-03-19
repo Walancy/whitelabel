@@ -5,48 +5,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    /* Light mode — branco suave (warm off-white) */
+    --background: 40 20% 97%;          /* #f8f7f5 — off-white quente */
+    --foreground: 220 15% 18%;         /* quase preto, mas suave */
+    --card: 40 20% 99%;                /* levemente off-white */
+    --card-foreground: 220 15% 18%;
+    --popover: 40 20% 99%;
+    --popover-foreground: 220 15% 18%;
+    --primary: 220 15% 18%;            /* preto suave para light */
+    --primary-foreground: 40 20% 97%;  /* off-white como foreground de primary */
+    --secondary: 220 10% 93%;
+    --secondary-foreground: 220 15% 18%;
+    --muted: 220 10% 93%;
+    --muted-foreground: 220 8% 46%;
+    --accent: 220 10% 91%;
+    --accent-foreground: 220 15% 18%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    --border: 220 10% 88%;
+    --input: 220 10% 88%;
+    --ring: 220 15% 18%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 5%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 12%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 12%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    /* Dark mode — preto suave (deep slate, não #000) */
+    --background: 222 16% 10%;         /* #141820 — slate escuro */
+    --foreground: 210 14% 90%;         /* off-white frio — não #fff */
+    --card: 222 16% 13%;               /* ligeiramente mais claro que bg */
+    --card-foreground: 210 14% 90%;
+    --popover: 222 16% 11%;
+    --popover-foreground: 210 14% 90%;
+    --primary: 210 14% 90%;            /* off-white como primary no dark */
+    --primary-foreground: 222 16% 10%;
+    --secondary: 222 14% 16%;
+    --secondary-foreground: 210 14% 90%;
+    --muted: 222 14% 16%;
+    --muted-foreground: 220 8% 58%;
+    --accent: 222 14% 19%;
+    --accent-foreground: 210 14% 90%;
+    --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15%;
-    --input: 240 3.7% 15%;
-    --ring: 240 4.9% 83.9%;
+    --border: 222 14% 20%;
+    --input: 222 14% 20%;
+    --ring: 210 14% 70%;
   }
 
 }
@@ -65,6 +67,14 @@
 input, button {
   height: 2.5rem; /* Standardizing sizes */
 }
+
+/* Botões dentro do thead não devem herdar a altura padrão */
+thead button,
+thead input[type="checkbox"] {
+  height: auto !important;
+  min-height: unset !important;
+}
+
 
 /* Override browser autofill: mantém estilo do input (evita fundo azulado Chromium) */
 input:-webkit-autofill,

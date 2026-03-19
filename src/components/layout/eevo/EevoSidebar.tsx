@@ -1,4 +1,4 @@
-import { useState, type ElementType } from 'react';
+import React, { useState, type ElementType } from 'react';
 import { 
   Plus, 
   BarChart2, 
@@ -13,10 +13,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-utils';
 import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
-  icon: ElementType;
+  icon: ElementType<{ size?: number; className?: string }>;
   label: string;
   active?: boolean;
   hasDropdown?: boolean;
@@ -24,23 +25,49 @@ interface SidebarItemProps {
   collapsed?: boolean;
 }
 
-const SidebarItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: SidebarItemProps) => (
-  <div className={cn(
-    "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all mb-1 group min-h-[42px]",
-    active ? "bg-primary text-primary-foreground font-semibold shadow-sm" : "hover:bg-accent/50 text-muted-foreground hover:text-foreground",
-    collapsed && "justify-center px-1"
-  )}>
-    <Icon size={18} className={cn("transition-colors shrink-0", active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
-    {!collapsed && (
-      <>
-        <span className={cn("text-xs font-semibold truncate flex-1 tracking-tight", active ? "text-primary-foreground" : "text-foreground")}>{label}</span>
-        {hasDropdown && (
-          <ChevronDown size={14} className={cn("transition-transform opacity-50", isOpen && "rotate-180", active && "text-primary-foreground opacity-100")} />
-        )}
-      </>
-    )}
-  </div>
-);
+const SidebarItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: SidebarItemProps) => {
+  const { dashboardConfig, theme } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
+  const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
+
+  const getIconColor = () => {
+    if (active) return sidebarActiveStyle === 'solid' ? 'text-primary-foreground' : 'text-primary';
+    if (sidebarIconColor === 'primary') return 'text-primary opacity-80 group-hover:opacity-100';
+    if (sidebarIconColor === 'background') return 'text-background opacity-70 group-hover:opacity-100';
+    return 'text-foreground opacity-70 group-hover:opacity-100';
+  };
+
+  const borderRgb = theme === 'dark' ? '255 255 255' : '0 0 0';
+  const activeBorderStyle: React.CSSProperties = active && !['minimal', 'workly-neon'].includes(sidebarActiveStyle)
+    ? { borderColor: `rgb(${borderRgb} / ${sidebarBorderOpacity / 100})` } : {};
+
+  return (
+    <div
+      className={cn(
+        'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
+        active ? activeClass : INACTIVE_SIDEBAR_CLASS,
+        collapsed && 'justify-center px-1'
+      )}
+      style={{
+        minHeight: `${sidebarBtnSize}px`,
+        paddingLeft: collapsed ? undefined : `${sidebarBtnGap}px`,
+        paddingRight: collapsed ? undefined : `${sidebarBtnGap}px`,
+        gap: `${sidebarBtnGap}px`,
+        ...activeBorderStyle
+      }}
+    >
+      <Icon size={18} className={cn("shrink-0 transition-colors z-10 relative", getIconColor())} />
+      {!collapsed && (
+        <div className="flex items-center justify-between w-full overflow-hidden">
+          <span className={cn("font-semibold truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
+          {hasDropdown && (
+            <ChevronDown size={14} className={cn("ml-2 opacity-50 transition-transform text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const EevoSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
@@ -55,7 +82,6 @@ export const EevoSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) =>
       "h-screen flex flex-col border-r border-border font-sans transition-all duration-300 sticky top-0 z-40 overflow-hidden",
       collapsed ? "w-20" : "w-64"
     )} style={chromeStyle}>
-      {/* Brand - Header Height Aligned to h-16, Logo Left */}
       <div className={cn(
         "flex items-center h-16 px-6 border-b border-border mb-6 transition-all duration-300",
         collapsed ? "justify-center" : "justify-between"
@@ -84,7 +110,6 @@ export const EevoSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) =>
         </div>
       )}
 
-      {/* Buttons Section */}
       <div className={cn("px-3 mb-6 transition-all", collapsed && "px-4")}>
         <button className={cn(
           "bg-primary text-primary-foreground rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all w-full",
@@ -95,7 +120,6 @@ export const EevoSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) =>
         </button>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 scrollbar-hide py-2">
         <div className="space-y-1">
           <SidebarItem icon={BarChart2} label="Analytics" active collapsed={collapsed} />
@@ -119,7 +143,6 @@ export const EevoSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) =>
         </div>
       </nav>
 
-      {/* Profile/Actions bottom */}
       <div className="mt-auto p-4 border-t border-border" style={chromeStyle}>
          <div className={cn(
            "flex items-center rounded-lg border border-border bg-accent/30 group cursor-pointer hover:bg-accent transition-all",

@@ -1,4 +1,4 @@
-import { useState, type ElementType } from 'react';
+import React, { useState, type ElementType } from 'react';
 import { 
   Plus, 
   Home, 
@@ -11,10 +11,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-utils';
 import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
-  icon: ElementType;
+  icon: ElementType<{ size?: number; className?: string }>;
   label: string;
   active?: boolean;
   collapsed?: boolean;
@@ -22,23 +23,49 @@ interface SidebarItemProps {
   isOpen?: boolean;
 }
 
-const SidebarItem = ({ icon: Icon, label, active, collapsed, hasDropdown, isOpen }: SidebarItemProps) => (
-  <div className={cn(
-    "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all mb-1 group min-h-[44px]",
-    active ? "bg-primary text-primary-foreground font-semibold shadow-sm" : "hover:bg-accent/50 text-muted-foreground hover:text-foreground",
-    collapsed && "justify-center px-1"
-  )}>
-    <Icon size={18} className={cn("transition-colors shrink-0", active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
-    {!collapsed && (
-      <>
-        <span className={cn("text-xs font-semibold truncate flex-1 tracking-tight", active ? "text-primary-foreground" : "text-foreground")}>{label}</span>
-        {hasDropdown && (
-          <ChevronDown size={14} className={cn("transition-transform opacity-50", isOpen && "rotate-180", active && "text-primary-foreground opacity-100")} />
-        )}
-      </>
-    )}
-  </div>
-);
+const SidebarItem = ({ icon: Icon, label, active, collapsed, hasDropdown, isOpen }: SidebarItemProps) => {
+  const { dashboardConfig, theme } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
+  const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
+
+  const getIconColor = () => {
+    if (active) return sidebarActiveStyle === 'solid' ? 'text-primary-foreground' : 'text-primary';
+    if (sidebarIconColor === 'primary') return 'text-primary opacity-80 group-hover:opacity-100';
+    if (sidebarIconColor === 'background') return 'text-background opacity-70 group-hover:opacity-100';
+    return 'text-foreground opacity-70 group-hover:opacity-100';
+  };
+
+  const borderRgb = theme === 'dark' ? '255 255 255' : '0 0 0';
+  const activeBorderStyle: React.CSSProperties = active && !['minimal', 'workly-neon'].includes(sidebarActiveStyle)
+    ? { borderColor: `rgb(${borderRgb} / ${sidebarBorderOpacity / 100})` } : {};
+
+  return (
+    <div
+      className={cn(
+        'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
+        active ? activeClass : INACTIVE_SIDEBAR_CLASS,
+        collapsed && 'justify-center px-1'
+      )}
+      style={{
+        minHeight: `${sidebarBtnSize}px`,
+        paddingLeft: collapsed ? undefined : `${sidebarBtnGap}px`,
+        paddingRight: collapsed ? undefined : `${sidebarBtnGap}px`,
+        gap: `${sidebarBtnGap}px`,
+        ...activeBorderStyle
+      }}
+    >
+      <Icon size={18} className={cn("shrink-0 transition-colors z-10 relative", getIconColor())} />
+      {!collapsed && (
+        <div className="flex items-center justify-between w-full overflow-hidden">
+          <span className={cn("font-semibold truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
+          {hasDropdown && (
+            <ChevronDown size={14} className={cn("ml-2 opacity-50 transition-transform text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -53,7 +80,6 @@ export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
       "h-screen flex flex-col border-r border-border font-sans transition-all duration-300 sticky top-0 z-40 overflow-hidden",
       collapsed ? "w-20" : "w-64"
     )} style={chromeStyle}>
-      {/* Header - h-16 alignment and logo left aligned */}
       <div className={cn(
         "flex items-center px-6 h-16 shrink-0 border-b border-border mb-6 relative transition-all duration-300",
         collapsed ? "justify-center" : "justify-between"
@@ -84,7 +110,7 @@ export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
 
       <div className="px-3 mb-6">
         <button className={cn(
-          "w-full bg-primary text-primary-foreground rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all text-primary-foreground",
+          "w-full bg-primary text-primary-foreground rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow-sm hover:brightness-110 active:scale-95 transition-all",
           collapsed ? "h-10 px-0" : "h-11"
         )}>
           <Plus size={18} className="text-primary-foreground" />
@@ -96,7 +122,6 @@ export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
         <div className="space-y-1">
           <SidebarItem icon={Home} label="Local Hub" active collapsed={collapsed} />
           
-          {/* Dropdown for Storage */}
           <div onClick={() => !collapsed && setStorageOpen(!storageOpen)}>
             <SidebarItem icon={HardDrive} label="Storage" hasDropdown isOpen={storageOpen} collapsed={collapsed} />
           </div>
