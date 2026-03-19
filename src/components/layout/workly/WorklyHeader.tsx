@@ -1,11 +1,12 @@
 import { Bell, Search, Settings, Grid, Sun, Moon, Plus } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
 
 export const WorklyHeader = () => {
   const { theme, toggleTheme } = useTheme();
+  const chromeStyle = useChromeStyle();
 
   return (
-    <header className="h-16 px-6 flex items-center justify-between border-b border-border bg-card text-foreground font-poppins sticky top-0 z-40 transition-colors duration-300">
+    <header className="h-16 px-6 flex items-center justify-between border-b border-border text-foreground font-poppins sticky top-0 z-40 transition-colors duration-300" style={chromeStyle}>
       <div className="flex-1 max-lg:hidden max-w-md">
         <div className="relative group">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-foreground transition-all" />

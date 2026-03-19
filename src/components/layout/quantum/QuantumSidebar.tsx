@@ -14,7 +14,8 @@ import {
   ChevronsRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
   icon: ElementType;
@@ -45,8 +46,9 @@ const SidebarItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed
   </div>
 );
 
-export const QuantumSidebar = () => {
+export const QuantumSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
+  const chromeStyle = useChromeStyle();
   const [repoOpen, setRepoOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   
@@ -54,9 +56,9 @@ export const QuantumSidebar = () => {
 
   return (
     <aside className={cn(
-      "h-screen flex flex-col bg-card border-r border-border font-sans transition-colors duration-300 sticky top-0 z-40 overflow-hidden",
+      "h-screen flex flex-col border-r border-border font-sans transition-colors duration-300 sticky top-0 z-40 overflow-hidden",
       collapsed ? "w-20" : "w-64"
-    )}>
+    )} style={chromeStyle}>
       {/* Brand - Height Aligned to h-16, Logo Left */}
       <div className={cn(
         "flex items-center h-16 px-6 border-b border-border shadow-sm mb-6 transition-all duration-300",
@@ -103,6 +105,9 @@ export const QuantumSidebar = () => {
           <SidebarItem icon={CheckSquare} label="Backlog" collapsed={collapsed} />
           <SidebarItem icon={Mail} label="Comms" collapsed={collapsed} />
           <SidebarItem icon={MessageSquare} label="Feedback" collapsed={collapsed} />
+          <div onClick={() => onNavigate?.('users')}>
+            <SidebarItem icon={User} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
+          </div>
         </div>
 
         {!collapsed && (
@@ -118,7 +123,7 @@ export const QuantumSidebar = () => {
       </nav>
 
       {/* Bottom Profile Bar */}
-      <div className="mt-auto p-4 border-t border-border bg-card">
+      <div className="mt-auto p-4 border-t border-border" style={chromeStyle}>
          <div className={cn(
            "flex items-center bg-accent/20 rounded-lg border border-border group cursor-pointer hover:bg-accent transition-all",
            collapsed ? "justify-center p-2" : "gap-3 p-2"

@@ -1,11 +1,12 @@
 import { Bell, Search, Grid, Plus, Sun, Moon } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
 
 export const TaskplusHeader = () => {
   const { theme, toggleTheme } = useTheme();
+  const chromeStyle = useChromeStyle();
 
   return (
-    <header className="h-16 px-6 flex items-center justify-between border-b bg-card border-border sticky top-0 z-40 font-sans transition-colors duration-300">
+    <header className="h-16 px-6 flex items-center justify-between border-b border-border sticky top-0 z-40 font-sans transition-colors duration-300" style={chromeStyle}>
       <div className="flex items-center gap-6 flex-1">
         <div className="relative max-w-md w-full">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />

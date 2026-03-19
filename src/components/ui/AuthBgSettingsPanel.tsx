@@ -75,37 +75,38 @@ function ControlRow({ control, value, onChange }: {
         <span className="text-[10px] text-muted-foreground font-medium">{control.label}</span>
         <div className="flex items-center gap-1.5">
           {isAuto ? (
-            <>
-              <div className="w-5 h-5 rounded" style={{ backgroundColor: computedColor, border: '1px solid hsl(var(--border))' }} />
+            <div className="relative flex items-center gap-1.5 group cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="w-4 h-4 rounded-sm border border-border shadow-sm" style={{ backgroundColor: computedColor }} />
               <span className="text-[10px] text-muted-foreground">Auto</span>
               <input
                 type="color"
                 value={computedColor}
                 onChange={(e) => onChange(e.target.value)}
                 title="Personalizar cor"
-                className="w-5 h-5 rounded cursor-pointer opacity-0 absolute"
-                style={{ position: 'relative', opacity: 1, padding: 0, border: 'none', width: 14, height: 14 }}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-            </>
+            </div>
           ) : (
-            <>
-              <input
-                type="color"
-                value={computedColor}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-5 h-5 rounded cursor-pointer"
-                style={{ border: 'none', outline: 'none', padding: 0 }}
-              />
+            <div className="flex items-center gap-1.5">
+              <div className="relative w-4 h-4 rounded-sm border border-border overflow-hidden shadow-sm group">
+                <div className="w-full h-full" style={{ backgroundColor: computedColor }} />
+                <input
+                  type="color"
+                  value={computedColor}
+                  onChange={(e) => onChange(e.target.value)}
+                  className="absolute -inset-2 w-10 h-10 opacity-0 cursor-pointer"
+                />
+              </div>
               <span className="text-[10px] font-mono text-muted-foreground">{computedColor}</span>
               <button
                 type="button"
                 onClick={() => onChange('auto')}
-                className="text-[10px] text-primary hover:opacity-70 transition-opacity px-1"
+                className="text-[9px] text-primary bg-primary/10 rounded px-1.5 py-0.5 hover:bg-primary/20 transition-colors ml-1"
                 title="Voltar para automático"
               >
-                auto
+                Auto
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

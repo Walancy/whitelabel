@@ -1,11 +1,12 @@
 import { Search, Bell, Sun, Moon } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
 
 export const ShopeersHeader = () => {
   const { theme, toggleTheme } = useTheme();
+  const chromeStyle = useChromeStyle();
 
   return (
-    <header className="h-16 flex items-center justify-between px-6 bg-card border-b border-border transition-colors sticky top-0 z-40 font-poppins">
+    <header className="h-16 flex items-center justify-between px-6 border-b border-border transition-colors sticky top-0 z-40 font-poppins" style={chromeStyle}>
       {/* Search - Transparent background & Dynamic Radius */}
       <div className="flex-1 max-w-sm">
         <div className="relative group">

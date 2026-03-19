@@ -13,9 +13,11 @@ import {
   ArrowLeftToLine,
   ArrowRightToLine
 } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
+import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-utils';
 import { useState } from 'react';
+import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
   icon: ElementType;
@@ -29,12 +31,15 @@ interface SidebarItemProps {
 }
 
 const SidebarItem = ({ icon: Icon, label, badge, hasSubmenu, isOpen, isSubmenu, active, collapsed }: SidebarItemProps) => {
+  const { dashboardConfig } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor } = dashboardConfig;
+  const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
   return (
     <div className={cn(
-      "flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-all group min-h-[44px] mb-0.5",
-      active ? "bg-primary text-primary-foreground font-semibold shadow-sm" : "hover:bg-accent/50 text-muted-foreground hover:text-foreground",
-      isSubmenu && "py-1.5 text-[12px] opacity-80",
-      collapsed && "justify-center px-1"
+      'flex items-center justify-between px-3 py-2.5 rounded-[var(--radius)] cursor-pointer transition-all group min-h-[44px] mb-0.5',
+      active ? activeClass : INACTIVE_SIDEBAR_CLASS,
+      isSubmenu && 'py-1.5 text-[12px] opacity-80',
+      collapsed && 'justify-center px-1'
     )}>
       <div className="flex items-center gap-3 overflow-hidden">
         <Icon size={isSubmenu ? 14 : 18} className={cn("transition-colors shrink-0", active ? "text-primary-foreground font-bold" : "text-muted-foreground group-hover:text-foreground")} />
@@ -59,8 +64,9 @@ const SidebarItem = ({ icon: Icon, label, badge, hasSubmenu, isOpen, isSubmenu, 
   );
 };
 
-export const ProjectliSidebar = () => {
+export const ProjectliSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
+  const chromeStyle = useChromeStyle();
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -68,9 +74,9 @@ export const ProjectliSidebar = () => {
 
   return (
     <aside className={cn(
-      "h-screen bg-card text-foreground flex flex-col font-sans border-r border-border transition-all duration-300 sticky top-0 z-40 overflow-hidden",
+      "h-screen text-foreground flex flex-col font-sans border-r border-border transition-all duration-300 sticky top-0 z-40 overflow-hidden",
       collapsed ? "w-20" : "w-64"
-    )}>
+    )} style={chromeStyle}>
       {/* Header - Aligned to h-16 and logo left aligned */}
       <div className={cn(
         "px-6 border-b border-border shrink-0 flex items-center h-16 transition-all duration-300",
@@ -123,16 +129,18 @@ export const ProjectliSidebar = () => {
             )}
 
             <SidebarItem icon={MessageSquare} label="Messages" collapsed={collapsed} />
-            <SidebarItem icon={Users} label="Team" collapsed={collapsed} />
+            <div onClick={() => onNavigate?.('users')}>
+              <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
+            </div>
             <SidebarItem icon={Calendar} label="Calendar" collapsed={collapsed} />
           </div>
         </div>
       </div>
 
       <div className={cn(
-        "p-4 border-t border-border mt-auto shrink-0 bg-card",
+        "p-4 border-t border-border mt-auto shrink-0",
         collapsed && "flex flex-col items-center px-2"
-      )}>
+      )} style={chromeStyle}>
         <button className={cn(
           "w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-lg text-xs font-semibold shadow-md active:scale-[0.98] transition-all",
           collapsed && "w-10 h-10 px-0"

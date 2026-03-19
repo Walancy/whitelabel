@@ -15,7 +15,8 @@ import {
   FolderOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import type { SidebarNavProps } from '@/types/navigation';
 
 interface NavItemProps {
   icon: ElementType;
@@ -44,8 +45,9 @@ const NavItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: 
   </div>
 );
 
-export const WorklySidebar = () => {
+export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
+  const chromeStyle = useChromeStyle();
   const [projectsOpen, setProjectsOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   
@@ -53,9 +55,9 @@ export const WorklySidebar = () => {
 
   return (
     <aside className={cn(
-      "h-screen flex flex-col bg-card border-r border-border font-poppins text-foreground sticky top-0 transition-all duration-300 overflow-hidden",
+      "h-screen flex flex-col border-r border-border font-poppins text-foreground sticky top-0 transition-all duration-300 overflow-hidden",
       collapsed ? "w-20 px-2" : "w-64 px-3"
-    )}>
+    )} style={chromeStyle}>
       {/* Brand - Circular Toggle */}
       <div className={cn(
         "flex items-center h-16 border-b border-border shrink-0 mb-6 px-3 transition-all duration-300",
@@ -107,7 +109,9 @@ export const WorklySidebar = () => {
            <div className="mt-8 mb-4">
             <p className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">Core</p>
             <NavItem icon={FileText} label="Docs" />
-            <NavItem icon={Users} label="Team" />
+            <div onClick={() => onNavigate?.('users')}>
+              <NavItem icon={Users} label="Usuários" active={activePage === 'users'} />
+            </div>
             <NavItem icon={Inbox} label="Inbox" />
             <NavItem icon={MessageSquare} label="Help" />
           </div>

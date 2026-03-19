@@ -1,6 +1,8 @@
 /** Converte HSL string "h s% l%" para hex — utilitário compartilhado */
-export const hslToHex = (hsl: string): string => {
+export const hslToHex = (hsl: string | undefined): string => {
+  if (!hsl || !hsl.includes(' ')) return '#000000';
   const [h, s, l] = hsl.split(' ').map((v) => parseFloat(v));
+  if (isNaN(h) || isNaN(s) || isNaN(l)) return '#000000';
   const ll = l / 100;
   const a = (s / 100) * Math.min(ll, 1 - ll);
   const f = (n: number) => {

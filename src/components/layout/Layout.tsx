@@ -18,25 +18,37 @@ import { ReSyncSidebar } from './resync/ReSyncSidebar';
 import { ReSyncHeader } from './resync/ReSyncHeader';
 import { useTheme } from '@/context/ThemeContext';
 import { LayoutSwitcher } from '../ui/LayoutSwitcher';
+import { DashboardBackground } from '../ui/DashboardBackground';
+
+import { type AppPage } from '@/App';
 
 interface LayoutProps {
   children: React.ReactNode;
+  activePage?: AppPage;
+  onNavigate?: (page: AppPage) => void;
 }
 
-export const Layout = ({ children }: LayoutProps) => {
-  const { visualPattern } = useTheme();
+export const Layout = ({ children, activePage, onNavigate }: LayoutProps) => {
+  const { visualPattern, dashboardConfig } = useTheme();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground transition-colors duration-300">
-      {visualPattern === 'nexus' && <Sidebar />}
-      {visualPattern === 'shopeers' && <ShopeersSidebar />}
-      {visualPattern === 'projectli' && <ProjectliSidebar />}
-      {visualPattern === 'magika' && <MagikaSidebar />}
-      {visualPattern === 'workly' && <WorklySidebar />}
-      {visualPattern === 'taskplus' && <TaskplusSidebar />}
-      {visualPattern === 'eevo' && <EevoSidebar />}
-      {visualPattern === 'quantum' && <QuantumSidebar />}
-      {visualPattern === 'resync' && <ReSyncSidebar />}
+    <div className="flex h-screen overflow-hidden bg-background text-foreground transition-colors duration-300 relative">
+      {/* Background layer – sits behind everything */}
+      <DashboardBackground />
+
+      {dashboardConfig.layoutMode === 'sidebar' && (
+        <>
+          {visualPattern === 'nexus' && <Sidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'shopeers' && <ShopeersSidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'projectli' && <ProjectliSidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'magika' && <MagikaSidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'workly' && <WorklySidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'taskplus' && <TaskplusSidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'eevo' && <EevoSidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'quantum' && <QuantumSidebar activePage={activePage} onNavigate={onNavigate} />}
+          {visualPattern === 'resync' && <ReSyncSidebar activePage={activePage} onNavigate={onNavigate} />}
+        </>
+      )}
       
       <div className="flex-1 flex flex-col min-w-0 h-full">
         {visualPattern === 'nexus' && <Header />}
@@ -49,8 +61,10 @@ export const Layout = ({ children }: LayoutProps) => {
         {visualPattern === 'quantum' && <QuantumHeader />}
         {visualPattern === 'resync' && <ReSyncHeader />}
         
-        <main className="flex-1 overflow-y-auto px-6 py-6 scrollbar-stylized">
-          {children}
+        <main className="flex-1 flex flex-col min-h-0 overflow-hidden px-5 py-4 xl:py-5 scrollbar-stylized relative z-10">
+          <div className="flex-1 min-h-0 overflow-y-auto scrollbar-stylized">
+            {children}
+          </div>
         </main>
       </div>
 

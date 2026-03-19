@@ -16,7 +16,8 @@ import {
   Rows
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
   icon: ElementType;
@@ -54,8 +55,9 @@ const SidebarItem = ({ icon: Icon, label, badge, active, hasDropdown, isOpen, co
   </div>
 );
 
-export const TaskplusSidebar = () => {
+export const TaskplusSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
+  const chromeStyle = useChromeStyle();
   const [boardsOpen, setBoardsOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   
@@ -63,9 +65,9 @@ export const TaskplusSidebar = () => {
 
   return (
     <aside className={cn(
-      "h-screen flex flex-col bg-card border-r border-border font-sans sticky top-0 z-40 overflow-hidden transition-all duration-300",
+      "h-screen flex flex-col border-r border-border font-sans sticky top-0 z-40 overflow-hidden transition-all duration-300",
       collapsed ? "w-20" : "w-64"
-    )}>
+    )} style={chromeStyle}>
       {/* Brand - Header Height Aligned to h-16, Logo Left */}
       <div className={cn(
         "flex items-center h-16 px-6 border-b border-border shrink-0 mb-6 transition-all duration-300",
@@ -112,6 +114,9 @@ export const TaskplusSidebar = () => {
 
           <SidebarItem icon={Bell} label="Activities" badge="8" collapsed={collapsed} />
           <SidebarItem icon={LayoutIcon} label="Templates" collapsed={collapsed} />
+          <div onClick={() => onNavigate?.('users')}>
+            <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
+          </div>
         </div>
       </nav>
     </aside>

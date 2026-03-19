@@ -1,11 +1,12 @@
 import { Bell, Search, Settings, Grid, Sun, Moon, Plus } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
 
 export const ProjectliHeader = () => {
   const { theme, toggleTheme } = useTheme();
+  const chromeStyle = useChromeStyle();
 
   return (
-    <header className="h-16 px-6 flex items-center justify-between border-b bg-card text-foreground font-sans sticky top-0 z-40 transition-colors duration-300">
+    <header className="h-16 px-6 flex items-center justify-between border-b text-foreground font-sans sticky top-0 z-40 transition-colors duration-300" style={chromeStyle}>
       <div className="flex-1 max-lg:hidden max-w-lg">
         {/* Search - Transparent background & Dynamic Radius */}
         <div className="relative group bg-transparent border border-border rounded-lg h-10 flex items-center overflow-hidden transition-all">

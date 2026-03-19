@@ -15,7 +15,9 @@ import {
   SquareChevronRight 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-utils';
+import type { SidebarNavProps } from '@/types/navigation';
 
 interface SidebarItemProps {
   icon: ElementType;
@@ -29,14 +31,15 @@ interface SidebarItemProps {
 }
 
 const SidebarItem = ({ icon: Icon, label, badge, active, hasSubmenu, isOpen, isSubmenu, collapsed }: SidebarItemProps) => {
+  const { dashboardConfig } = useTheme();
+  const { sidebarActiveStyle, sidebarActiveTextColor } = dashboardConfig;
+  const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
   return (
     <div className={cn(
-      "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all relative group mb-0.5 min-h-[44px]",
-      active 
-        ? "bg-primary text-primary-foreground font-semibold shadow-sm border border-border" 
-        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-      isSubmenu && !collapsed && "ml-4 pl-8 py-2 text-[13px] rounded-none border-l border-border",
-      collapsed && "justify-center px-1"
+      'flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5 min-h-[44px]',
+      active ? activeClass : INACTIVE_SIDEBAR_CLASS,
+      isSubmenu && !collapsed && 'ml-4 pl-8 py-2 text-[13px] rounded-none border-l border-border',
+      collapsed && 'justify-center px-1'
     )}>
       <Icon size={isSubmenu ? 16 : 18} className={cn("shrink-0 transition-colors", active ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground")} />
       {!collapsed && (
@@ -59,18 +62,18 @@ const SidebarItem = ({ icon: Icon, label, badge, active, hasSubmenu, isOpen, isS
   );
 };
 
-export const ShopeersSidebar = () => {
+export const ShopeersSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const [financesOpen, setFinancesOpen] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
   const { theme } = useTheme();
-
+  const chromeStyle = useChromeStyle();
   const logoSrc = theme === 'dark' ? '/logo branca.svg' : '/logo preta.svg';
 
   return (
     <aside className={cn(
-      "h-screen flex flex-col bg-card border-r border-border font-poppins text-foreground transition-all duration-300 shrink-0 sticky top-0 z-40 overflow-hidden",
+      "h-screen flex flex-col border-r border-border font-poppins text-foreground transition-all duration-300 shrink-0 sticky top-0 z-40 overflow-hidden",
       collapsed ? "w-20 px-2" : "w-64 px-1"
-    )}>
+    )} style={chromeStyle}>
       {/* Header - h-16 alignment and logo left aligned */}
       <div className={cn(
         "flex items-center px-6 h-16 shrink-0 border-b border-border mb-4 relative transition-all duration-300",
@@ -106,7 +109,9 @@ export const ShopeersSidebar = () => {
             <SidebarItem icon={Compass} label="Dashboard" active collapsed={collapsed} />
             <SidebarItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
             <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
-            <SidebarItem icon={Users} label="Customers" collapsed={collapsed} />
+            <div onClick={() => onNavigate?.('users')}>
+              <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
+            </div>
             <SidebarItem icon={Store} label="Online Store" collapsed={collapsed} />
         </div>
 
