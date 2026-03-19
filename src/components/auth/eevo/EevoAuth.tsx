@@ -2,122 +2,163 @@ import { useState } from 'react';
 import { Eye, EyeOff, Github } from 'lucide-react';
 import { GoogleIcon } from '@/components/ui/social-icons';
 import { AuthBackground } from '@/components/ui/AuthBackground';
-import { useTheme } from '@/context/ThemeContext';
 
 export const EevoAuth = ({ onLogin }: { onLogin: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
-  const { activeAccentColor } = useTheme();
-  const accent = `hsl(${activeAccentColor})`;
 
   return (
-    <div className="min-h-screen w-full relative overflow-hidden bg-[#050505]">
-      {/* Full-screen background effect */}
-      <AuthBackground />
-      <div className="absolute inset-0 z-[1] bg-black/50 pointer-events-none" />
+    <div className="min-h-screen w-full flex bg-background text-foreground overflow-hidden">
 
-      {/* Layout */}
-      <div className="relative z-10 min-h-screen flex flex-col lg:flex-row">
+      {/* ── Left panel ─────────────────────────────────────────────────────────
+          bg-background IS the "white border" — in light mode it's white, in
+          dark mode it's the dark surface. The inner dark image gets rounded
+          corners inside that padding, creating the immersion frame effect.   */}
+      <div
+        className="hidden lg:flex relative bg-background p-4 lg:min-w-0 lg:w-[calc((100-var(--auth-form-width))*1%)]"
+      >
+        {/* Inner dark image — rounded corners create the framed look */}
+        <div className="flex-1 rounded-2xl overflow-hidden relative bg-[#070707]">
 
-        {/* Left — headline */}
-        <div className="flex-1 flex flex-col justify-between p-8 lg:p-14">
-          <div /> {/* top spacer */}
-          <h1 className="text-4xl lg:text-6xl font-black text-white leading-[0.95] uppercase max-w-lg tracking-tight">
-            Convert your ideas<br />
-            into successful<br />
-            <span style={{ color: accent }}>business.</span>
-          </h1>
-          <div className="text-[10px] font-bold uppercase tracking-[0.4em] text-white/20 hidden lg:block">
-            EEVO — Next Generation Platform
+          {/* AuthBackground effect */}
+          <div className="absolute inset-0 z-0">
+            <AuthBackground />
+          </div>
+
+          {/* Layered depth overlay */}
+          <div className="absolute inset-0 z-[1] bg-gradient-to-t from-black/92 via-black/35 to-black/15 pointer-events-none" />
+
+
+          {/* Panel content */}
+          <div className="absolute inset-0 z-[2] flex flex-col justify-between p-8 animate-in fade-in duration-700">
+            {/* Logo */}
+            <img
+              src="/logo branca.svg"
+              alt="Logo"
+              className="h-[22px] w-auto object-contain object-left"
+              draggable={false}
+            />
+
+            {/* Bottom headline */}
+            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <h1 className="text-4xl font-semibold text-white leading-[1.15] tracking-tight">
+                Build something<br />amazing today.
+              </h1>
+              <p className="text-sm text-white/50 leading-relaxed max-w-[260px]">
+                Bring your ideas to life with powerful tools and seamless collaboration.
+              </p>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Right — floating card */}
-        <div className="flex items-center justify-center p-6 lg:py-8 lg:pr-12 w-full lg:w-auto">
-          <div className="w-full max-w-[400px] bg-black/70 backdrop-blur-xl border border-white/10 rounded-2xl p-8 space-y-6 shadow-2xl">
-            {/* Logo */}
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `hsl(${activeAccentColor} / 0.2)` }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M10 2L18 6.5V13.5L10 18L2 13.5V6.5L10 2Z" stroke={accent} strokeWidth="1.5" fill="none" />
-                <path d="M10 6L14 8.25V12.75L10 15L6 12.75V8.25L10 6Z" fill={accent} />
-              </svg>
-            </div>
+      {/* ── Right panel — form ────────────────────────────────────────────────── */}
+      <div className="w-full lg:min-w-0 flex flex-col items-center justify-center p-8 lg:p-14 animate-in fade-in duration-700 bg-background lg:w-[calc(var(--auth-form-width)*1%)]">
+        <div className="w-full max-w-[340px] flex flex-col gap-7">
 
-            {/* Heading */}
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold text-white">Get Started</h2>
-              <p className="text-white/40 text-xs">Welcome to Eevo — Let's get started</p>
-            </div>
-
-            {/* Form */}
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">Your Email</label>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  className="w-full h-11 bg-white/5 border border-white/10 rounded-lg px-4 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 transition-colors"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">Password</label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Ds1s23@#f2ds"
-                    className="w-full h-11 bg-white/5 border border-white/10 rounded-lg px-4 pr-11 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-white/30 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/70 transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember me */}
-              <label className="flex items-center gap-2.5 cursor-pointer group">
-                <div
-                  onClick={() => setRemember(!remember)}
-                  className="w-4 h-4 rounded flex items-center justify-center border transition-all shrink-0"
-                  style={{ backgroundColor: remember ? accent : 'transparent', borderColor: remember ? accent : 'rgba(255,255,255,0.2)' }}
-                >
-                  {remember && (
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                      <path d="M1 4L3.5 6.5L9 1" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
-                <span className="text-xs text-white/50 group-hover:text-white/70 transition-colors select-none">Remember me</span>
-              </label>
-
-              <button
-                type="submit"
-                className="w-full h-11 rounded-lg font-bold text-sm text-black transition-all hover:brightness-110 active:scale-[0.99] mt-2"
-                style={{ backgroundColor: accent }}
-              >
-                Sign In
-              </button>
-            </form>
-
-            {/* Divider */}
-            <div className="grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center gap-2 h-10 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all active:scale-[0.98]">
-                <GoogleIcon size={15} /><span className="text-[11px] font-semibold text-white/60">Google</span>
-              </button>
-              <button className="flex items-center justify-center gap-2 h-10 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 transition-all active:scale-[0.98]">
-                <Github size={15} className="text-white/60" /><span className="text-[11px] font-semibold text-white/60">Github</span>
-              </button>
-            </div>
-
-            <p className="text-xs text-white/30 text-center">
-              Don't have an account?{' '}
-              <span className="font-bold cursor-pointer hover:underline" style={{ color: accent }}>Sign up</span>
-            </p>
+          {/* Heading */}
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
+            <p className="text-sm text-muted-foreground">Welcome back! Enter your details below.</p>
           </div>
+
+          {/* Form */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); onLogin(); }}
+            className="flex flex-col gap-4"
+          >
+            {/* Email */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Email address
+              </label>
+              <input
+                type="email"
+                placeholder="you@company.com"
+                className="h-11 w-full rounded-[var(--radius)] border border-border bg-accent/20 px-4 text-sm placeholder:text-muted-foreground/50 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+              />
+            </div>
+
+            {/* Password */}
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Password
+                </label>
+                <span className="text-xs text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none">
+                  Forgot password?
+                </span>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  className="h-11 w-full rounded-[var(--radius)] border border-border bg-accent/20 px-4 pr-11 text-sm placeholder:text-muted-foreground/50 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Keep me logged in */}
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="w-3.5 h-3.5 rounded border-border accent-primary cursor-pointer"
+              />
+              <span className="text-sm text-muted-foreground">Keep me logged in</span>
+            </label>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              className="h-11 w-full rounded-[var(--radius)] bg-primary text-primary-foreground text-sm font-semibold hover:brightness-105 active:scale-[0.99] transition-all mt-1"
+            >
+              Sign in
+            </button>
+          </form>
+
+          {/* OR divider */}
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">or</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          {/* Social buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 h-11 rounded-[var(--radius)] bg-card border border-border hover:bg-accent/20 active:scale-[0.98] transition-all text-sm font-semibold"
+            >
+              <Github size={16} />
+              <span>GitHub</span>
+            </button>
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 h-11 rounded-[var(--radius)] bg-card border border-border hover:bg-accent/20 active:scale-[0.98] transition-all text-sm font-semibold"
+            >
+              <GoogleIcon size={16} />
+              <span>Google</span>
+            </button>
+          </div>
+
+          {/* Sign up */}
+          <p className="text-center text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <span className="font-semibold text-foreground cursor-pointer hover:underline underline-offset-2">
+              Sign up
+            </span>
+          </p>
+
         </div>
       </div>
     </div>

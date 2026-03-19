@@ -68,18 +68,18 @@ float perlin3D(float amplitude, float frequency, float px, float py, float pz) {
   return amplitude*mix(ly0,ly1,sz);
 }
 
-float auroraGlow(float t, vec2 shift) {
+float auroraGlow(float t, vec2 shift, float noiseFreq, float noiseAmp, float scale, float octaveDecay, float bandHeight, float bandSpread) {
   vec2 uv = gl_FragCoord.xy / uResolution.y;
   uv += shift;
   float noiseVal = 0.0;
-  float freq = uNoiseFreq; float amp = uNoiseAmp;
-  vec2 samplePos = uv * uScale;
+  float freq = noiseFreq; float amp = noiseAmp;
+  vec2 samplePos = uv * scale;
   for (float i = 0.0; i < 3.0; i += 1.0) {
     noiseVal += perlin3D(amp, freq, samplePos.x, samplePos.y, t);
-    amp *= uOctaveDecay; freq *= 2.0;
+    amp *= octaveDecay; freq *= 2.0;
   }
-  float yBand = uv.y * 10.0 - uBandHeight * 10.0;
-  return 0.3 * max(exp(uBandSpread * (1.0 - 1.1 * abs(noiseVal + yBand))), 0.0);
+  float yBand = uv.y * 10.0 - bandHeight * 10.0;
+  return 0.3 * max(exp(bandSpread * (1.0 - 1.1 * abs(noiseVal + yBand))), 0.0);
 }
 
 void main() {
@@ -88,8 +88,8 @@ void main() {
   vec2 shift = vec2(0.0);
   if (uEnableMouse) shift = (uMouse - 0.5) * uMouseInfluence;
   vec3 col = vec3(0.0);
-  col += 0.99 * auroraGlow(t, shift) * cosineGradient(uv.x + uTime*uSpeed*0.2*uColorSpeed, vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.3,0.20,0.20)) * uColor1;
-  col += 0.99 * auroraGlow(t + uLayerOffset, shift) * cosineGradient(uv.x + uTime*uSpeed*0.1*uColorSpeed, vec3(0.5), vec3(0.5), vec3(2.0,1.0,0.0), vec3(0.5,0.20,0.25)) * uColor2;
+  col += 0.99 * auroraGlow(t, shift, uNoiseFreq, uNoiseAmp, uScale, uOctaveDecay, uBandHeight, uBandSpread) * cosineGradient(uv.x + uTime*uSpeed*0.2*uColorSpeed, vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.3,0.20,0.20)) * uColor1;
+  col += 0.99 * auroraGlow(t + uLayerOffset, shift, uNoiseFreq, uNoiseAmp, uScale, uOctaveDecay, uBandHeight, uBandSpread) * cosineGradient(uv.x + uTime*uSpeed*0.1*uColorSpeed, vec3(0.5), vec3(0.5), vec3(2.0,1.0,0.0), vec3(0.5,0.20,0.25)) * uColor2;
   col *= uBrightness;
   float alpha = clamp(length(col), 0.0, 1.0);
   gl_FragColor = vec4(col, alpha);
@@ -130,17 +130,17 @@ export default function SoftAurora({
   mouseInfluence = 0.25,
 }: SoftAuroraProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const programRef = useRef<Program | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    const renderer = new Renderer({ alpha: true, premultipliedAlpha: false });
+    const renderer = new Renderer({ alpha: true, premultipliedAlpha: false, dpr: Math.min(window.devicePixelRatio || 1, 1.35) });
     const gl = renderer.gl;
     gl.clearColor(0, 0, 0, 0);
 
     const canvas = gl.canvas as HTMLCanvasElement;
-
     let currentMouse = [0.5, 0.5];
     let targetMouse = [0.5, 0.5];
 
@@ -155,7 +155,9 @@ export default function SoftAurora({
 
     const resize = () => {
       renderer.setSize(container.offsetWidth, container.offsetHeight);
-      program.uniforms.uResolution.value = [canvas.width, canvas.height, canvas.width / canvas.height];
+      if (programRef.current) {
+        programRef.current.uniforms.uResolution.value = [gl.canvas.width, gl.canvas.height, gl.canvas.width / gl.canvas.height];
+      }
     };
 
     const geometry = new Triangle(gl);
@@ -182,6 +184,7 @@ export default function SoftAurora({
         uEnableMouse: { value: enableMouseInteraction },
       },
     });
+    programRef.current = program;
 
     const mesh = new Mesh(gl, { geometry, program });
     container.appendChild(canvas);
@@ -195,9 +198,18 @@ export default function SoftAurora({
     }
 
     let animationFrameId = 0;
-    const update = (time: number) => {
+    let lastTime = 0;
+    const fps = 60;
+    const interval = 1000 / fps;
+
+    const update = (timestamp: number) => {
       animationFrameId = requestAnimationFrame(update);
-      program.uniforms.uTime.value = time * 0.001;
+      if (!lastTime) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      if (delta < interval) return;
+      lastTime = timestamp - (delta % interval);
+
+      program.uniforms.uTime.value = timestamp * 0.001;
       if (enableMouseInteraction) {
         currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
         currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
@@ -217,10 +229,30 @@ export default function SoftAurora({
       }
       if (canvas.parentElement === container) container.removeChild(canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
+      programRef.current = null;
     };
-  }, [speed, scale, brightness, color1, color2, noiseFrequency, noiseAmplitude,
-      bandHeight, bandSpread, octaveDecay, layerOffset, colorSpeed,
-      enableMouseInteraction, mouseInfluence]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once to avoid shader re-compilation lag
 
-  return <div ref={containerRef} className="soft-aurora-container" />;
+  // Handle prop updates without re-creating the renderer/program
+  useEffect(() => {
+    const p = programRef.current;
+    if (!p) return;
+    p.uniforms.uSpeed.value = speed;
+    p.uniforms.uScale.value = scale;
+    p.uniforms.uBrightness.value = brightness;
+    p.uniforms.uColor1.value = hexToVec3(color1);
+    p.uniforms.uColor2.value = hexToVec3(color2);
+    p.uniforms.uNoiseFreq.value = noiseFrequency;
+    p.uniforms.uNoiseAmp.value = noiseAmplitude;
+    p.uniforms.uBandHeight.value = bandHeight;
+    p.uniforms.uBandSpread.value = bandSpread;
+    p.uniforms.uOctaveDecay.value = octaveDecay;
+    p.uniforms.uLayerOffset.value = layerOffset;
+    p.uniforms.uColorSpeed.value = colorSpeed;
+    p.uniforms.uMouseInfluence.value = mouseInfluence;
+    p.uniforms.uEnableMouse.value = enableMouseInteraction;
+  }, [speed, scale, brightness, color1, color2, noiseFrequency, noiseAmplitude, bandHeight, bandSpread, octaveDecay, layerOffset, colorSpeed, enableMouseInteraction, mouseInfluence]);
+
+  return <div ref={containerRef} className="soft-aurora-container" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} />;
 }

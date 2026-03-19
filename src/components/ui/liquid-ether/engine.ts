@@ -24,7 +24,7 @@ export interface Engine {
 function hexToVec4(hex: string): [number, number, number, number] {
   if (!hex || hex === 'transparent') return [0, 0, 0, 0];
   const h = hex.replace('#', '');
-  return [parseInt(h.slice(0,2),16)/255, parseInt(h.slice(2,4),16)/255, parseInt(h.slice(4,6),16)/255, 1];
+  return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255, 1];
 }
 function makePaletteTexture(stops: string[]) {
   const arr = stops.length ? stops : ['#fff', '#fff'];
@@ -88,7 +88,7 @@ class Simulation {
     this.cellScale.set(1 / fw, 1 / fh); this.fboSize.set(fw, fh);
   }
   createFBOs() {
-    const keys = ['vel0','vel1','vis0','vis1','div','p0','p1'];
+    const keys = ['vel0', 'vel1', 'vis0', 'vis1', 'div', 'p0', 'p1'];
     keys.forEach(k => { this.fbos[k] = makeFBO(this.fboSize.x, this.fboSize.y); });
   }
   createPasses() {
@@ -99,12 +99,12 @@ class Simulation {
     }, this.fbos.vel1);
     // boundary lines
     const bg = new THREE.BufferGeometry();
-    bg.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-1,-1,0,-1,1,0,-1,1,0,1,1,0,1,1,0,1,-1,0,1,-1,0,-1,-1,0]), 3));
+    bg.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-1, -1, 0, -1, 1, 0, -1, 1, 0, 1, 1, 0, 1, 1, 0, 1, -1, 0, 1, -1, 0, -1, -1, 0]), 3));
     const bm = new THREE.RawShaderMaterial({ vertexShader: line_vert, fragmentShader: advection_frag, uniforms: this.advection.uniforms });
     const bl = new THREE.LineSegments(bg, bm); this.advection.scene.add(bl);
     (this.advection as unknown as { boundary: THREE.LineSegments }).boundary = bl;
 
-    const fmesh = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.RawShaderMaterial({
+    const fmesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.RawShaderMaterial({
       vertexShader: mouse_vert, fragmentShader: externalForce_frag,
       blending: THREE.AdditiveBlending, depthWrite: false,
       uniforms: { px: { value: cs }, force: { value: new THREE.Vector2() }, center: { value: new THREE.Vector2() }, scale: { value: new THREE.Vector2(this.opts.cursorSize, this.opts.cursorSize) } }
@@ -112,16 +112,16 @@ class Simulation {
     this.forceScene.add(fmesh); this.force = fmesh;
 
     this.divergence = new ShaderPass(face_vert, divergence_frag, {
-      boundarySpace:{value:bs}, velocity:{value:this.fbos.vel1.texture}, px:{value:cs}, dt:{value:this.opts.dt},
+      boundarySpace: { value: bs }, velocity: { value: this.fbos.vel1.texture }, px: { value: cs }, dt: { value: this.opts.dt },
     }, this.fbos.div);
     this.poisson = new ShaderPass(face_vert, poisson_frag, {
-      boundarySpace:{value:bs}, pressure:{value:this.fbos.p0.texture}, divergence:{value:this.fbos.div.texture}, px:{value:cs},
+      boundarySpace: { value: bs }, pressure: { value: this.fbos.p0.texture }, divergence: { value: this.fbos.div.texture }, px: { value: cs },
     });
     this.viscous = new ShaderPass(face_vert, viscous_frag, {
-      boundarySpace:{value:bs}, velocity:{value:this.fbos.vel1.texture}, velocity_new:{value:this.fbos.vis0.texture}, v:{value:this.opts.viscous}, px:{value:cs}, dt:{value:this.opts.dt},
+      boundarySpace: { value: bs }, velocity: { value: this.fbos.vel1.texture }, velocity_new: { value: this.fbos.vis0.texture }, v: { value: this.opts.viscous }, px: { value: cs }, dt: { value: this.opts.dt },
     });
     this.pressurePass = new ShaderPass(face_vert, pressure_frag, {
-      boundarySpace:{value:bs}, pressure:{value:this.fbos.p0.texture}, velocity:{value:this.fbos.vis0.texture}, px:{value:cs}, dt:{value:this.opts.dt},
+      boundarySpace: { value: bs }, pressure: { value: this.fbos.p0.texture }, velocity: { value: this.fbos.vis0.texture }, px: { value: cs }, dt: { value: this.opts.dt },
     }, this.fbos.vel0);
   }
   resize(w: number, h: number) {
@@ -172,11 +172,11 @@ export function createEngine(container: HTMLElement, opts: EngineOptions, colors
   let autoActive = false, autoTarget = new THREE.Vector2(), autoCurrent = new THREE.Vector2();
   let lastUserTime = performance.now(), autoActivationTime = 0;
   const margin = 0.2;
-  const pickTarget = () => autoTarget.set((Math.random()*2-1)*(1-margin), (Math.random()*2-1)*(1-margin));
+  const pickTarget = () => autoTarget.set((Math.random() * 2 - 1) * (1 - margin), (Math.random() * 2 - 1) * (1 - margin));
   pickTarget();
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.autoClear = false; renderer.setClearColor(0, 0); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.autoClear = false; renderer.setClearColor(0, 0); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   Object.assign(renderer.domElement.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', display: 'block' });
 
   const getSize = () => ({ w: Math.max(1, container.clientWidth), h: Math.max(1, container.clientHeight) });
@@ -190,15 +190,15 @@ export function createEngine(container: HTMLElement, opts: EngineOptions, colors
   const scene = new THREE.Scene(), camera = new THREE.Camera();
   const output = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.RawShaderMaterial({
     vertexShader: face_vert, fragmentShader: color_frag, transparent: true, depthWrite: false,
-    uniforms: { velocity:{value:sim.fbos.vel0.texture}, boundarySpace:{value:new THREE.Vector2()}, palette:{value:palette}, bgColor:{value:new THREE.Vector4(fbr, fbg, fbb, fba)} },
+    uniforms: { velocity: { value: sim.fbos.vel0.texture }, boundarySpace: { value: new THREE.Vector2() }, palette: { value: palette }, bgColor: { value: new THREE.Vector4(fbr, fbg, fbb, fba) } },
   }));
   scene.add(output);
 
   // mouse
   const onMove = (e: MouseEvent) => {
     const rect = container.getBoundingClientRect(); if (!rect.width) return;
-    const nx = (e.clientX-rect.left)/rect.width*2-1, ny = -((e.clientY-rect.top)/rect.height*2-1);
-    mouse.isInside = e.clientX>=rect.left&&e.clientX<=rect.right&&e.clientY>=rect.top&&e.clientY<=rect.bottom;
+    const nx = (e.clientX - rect.left) / rect.width * 2 - 1, ny = -((e.clientY - rect.top) / rect.height * 2 - 1);
+    mouse.isInside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
     if (!mouse.isInside) return;
     lastUserTime = performance.now(); autoActive = false;
     mouse.coords.set(nx, ny); mouse.mouseMoved = true;
@@ -207,15 +207,22 @@ export function createEngine(container: HTMLElement, opts: EngineOptions, colors
   const onLeave = () => { mouse.isInside = false; };
   window.addEventListener('mousemove', onMove); document.addEventListener('mouseleave', onLeave);
 
+  let lastTime = performance.now();
   const tick = () => {
     if (!running) return;
+    raf = requestAnimationFrame(tick);
+    const now = performance.now();
+    const elapsed = now - lastTime;
+    if (elapsed < 16) return; // Cap at ~60fps
+    lastTime = now - (elapsed % 16);
+
     // auto demo
-    const idleMs = performance.now() - lastUserTime;
+    const idleMs = now - lastUserTime;
     const rampMs = opts.autoRampDuration * 1000;
     if (opts.autoDemo && idleMs > opts.autoResumeDelay && !mouse.isInside) {
       if (!autoActive) { autoActive = true; autoCurrent.copy(mouse.coords); autoActivationTime = performance.now(); pickTarget(); }
-      const elapsed = performance.now() - autoActivationTime;
-      const ramp = rampMs > 0 ? Math.min(1, elapsed / rampMs) : 1;
+      const elapsedAuto = now - autoActivationTime;
+      const ramp = rampMs > 0 ? Math.min(1, elapsedAuto / rampMs) : 1;
       const rampE = ramp * ramp * (3 - 2 * ramp);
       const dist = autoCurrent.distanceTo(autoTarget);
       if (dist < 0.01) pickTarget();
@@ -226,7 +233,6 @@ export function createEngine(container: HTMLElement, opts: EngineOptions, colors
     sim.step(mouse);
     output.material.uniforms.velocity.value = sim.fbos.vel0.texture;
     renderer.setRenderTarget(null); renderer.render(scene, camera);
-    raf = requestAnimationFrame(tick);
   };
 
   const ro = new ResizeObserver(() => {
@@ -260,7 +266,7 @@ export function createEngine(container: HTMLElement, opts: EngineOptions, colors
       const d = palette.image.data as Uint8Array;
       for (let i = 0; i < (palette.image.width as number); i++) {
         const col = new THREE.Color(arr[i % arr.length]);
-        d[i * 4]     = Math.round(col.r * 255);
+        d[i * 4] = Math.round(col.r * 255);
         d[i * 4 + 1] = Math.round(col.g * 255);
         d[i * 4 + 2] = Math.round(col.b * 255);
         d[i * 4 + 3] = 255;

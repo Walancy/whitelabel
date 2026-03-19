@@ -72,7 +72,7 @@ void main(){
   mat3 rot3dMat=mat3(1.0);
   if(uAnimType==1){vec3 ang=vec3(t*0.31,t*0.21,t*0.17);rot3dMat=rotZ(ang.z)*rotY(ang.y)*rotX(ang.x);}
   mat3 hoverMat=mat3(1.0);
-  if(uAnimType==2){vec2 m=uMouse*2.0-1.0;vec3 ang=vec3(m.y*0.6,m.x*0.6,0.0);hoverMat=rotY(ang.y)*rotX(ang.x);}
+  if(uAnimType==2){vec2 m=uMouse*2.0-1.0;vec3 ang=vec2(m.y*0.6,m.x*0.6).x?rotY(m.x*0.6)*rotX(m.y*0.6):mat3(1.0);}
   for(int i=0;i<44;++i){
     vec3 P=marchT*dir;P.z-=2.0;
     float rad=length(P);vec3 Pl=P*(10.0/max(rad,1e-6));
@@ -94,110 +94,115 @@ void main(){
   fragColor=vec4(clamp(col,0.0,1.0),1.0);
 }`;
 
-const hexToRgb01 = (hex: string): [number,number,number] => {
-  let h = hex.trim().replace('#','');
-  if (h.length===3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-  const iv = parseInt(h,16);
-  return [(iv>>16&255)/255,(iv>>8&255)/255,(iv&255)/255];
+const hexToRgb01 = (hex: string): [number, number, number] => {
+  let h = hex.trim().replace('#', '');
+  if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+  const iv = parseInt(h, 16);
+  return [(iv >> 16 & 255) / 255, (iv >> 8 & 255) / 255, (iv & 255) / 255];
 };
 
-const animTypeMap: Record<AnimType, number> = { rotate:0, rotate3d:1, hover:2 };
+const animTypeMap: Record<AnimType, number> = { rotate: 0, rotate3d: 1, hover: 2 };
 
 const PrismaticBurst = ({
-  intensity=2, speed=0.5, animationType='rotate3d', colors,
-  distort=0, hoverDampness=0, rayCount=0
+  intensity = 2, speed = 0.5, animationType = 'rotate3d', colors,
+  distort = 0, hoverDampness = 0, rayCount = 0
 }: PrismaticBurstProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const programRef = useRef<Program|null>(null);
-  const rendererRef = useRef<Renderer|null>(null);
-  const gradTexRef = useRef<Texture|null>(null);
-  const mouseTargetRef = useRef([0.5,0.5]);
-  const mouseSmoothRef = useRef([0.5,0.5]);
+  const programRef = useRef<Program | null>(null);
+  const rendererRef = useRef<Renderer | null>(null);
+  const gradTexRef = useRef<Texture | null>(null);
+  const mouseTargetRef = useRef([0.5, 0.5]);
+  const mouseSmoothRef = useRef([0.5, 0.5]);
   const pausedRef = useRef(false);
 
   useEffect(() => {
     const container = containerRef.current; if (!container) return;
-    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio||1,2), alpha:false, antialias:false });
+    const renderer = new Renderer({ dpr: Math.min(window.devicePixelRatio || 1, 1.25), alpha: false, antialias: false });
     rendererRef.current = renderer;
     const gl = renderer.gl;
-    Object.assign(gl.canvas.style, { position:'absolute',inset:'0',width:'100%',height:'100%' });
+    Object.assign(gl.canvas.style, { position: 'absolute', inset: '0', width: '100%', height: '100%' });
     container.appendChild(gl.canvas);
 
-    const white = new Uint8Array([255,255,255,255]);
-    const gradientTex = new Texture(gl, { image:white, width:1, height:1, generateMipmaps:false, flipY:false });
+    const white = new Uint8Array([255, 255, 255, 255]);
+    const gradientTex = new Texture(gl, { image: white, width: 1, height: 1, generateMipmaps: false, flipY: false });
     gradTexRef.current = gradientTex;
 
     const program = new Program(gl, {
-      vertex:vert, fragment:frag,
+      vertex: vert, fragment: frag,
       uniforms: {
-        uResolution:{value:[1,1]}, uTime:{value:0},
-        uIntensity:{value:1}, uSpeed:{value:1}, uAnimType:{value:0},
-        uMouse:{value:[0.5,0.5]}, uColorCount:{value:0}, uDistort:{value:0},
-        uOffset:{value:[0,0]}, uGradient:{value:gradientTex},
-        uNoiseAmount:{value:0.8}, uRayCount:{value:0}
+        uResolution: { value: [gl.drawingBufferWidth, gl.drawingBufferHeight] }, uTime: { value: 0 },
+        uIntensity: { value: intensity }, uSpeed: { value: speed }, uAnimType: { value: animTypeMap[animationType] },
+        uMouse: { value: [0.5, 0.5] }, uColorCount: { value: 0 }, uDistort: { value: distort },
+        uOffset: { value: [0, 0] }, uGradient: { value: gradientTex },
+        uNoiseAmount: { value: 0.8 }, uRayCount: { value: rayCount }
       }
     });
     programRef.current = program;
     const mesh = new Mesh(gl, { geometry: new Triangle(gl), program });
 
     const resize = () => {
-      const w=container.clientWidth||1, h=container.clientHeight||1;
-      renderer.setSize(w,h);
+      const w = container.clientWidth || 1, h = container.clientHeight || 1;
+      renderer.setSize(w, h);
       program.uniforms.uResolution.value = [gl.drawingBufferWidth, gl.drawingBufferHeight];
     };
     const ro = new ResizeObserver(resize); ro.observe(container); resize();
 
     const onPointer = (e: PointerEvent) => {
       const rect = container.getBoundingClientRect();
-      const x = (e.clientX-rect.left)/Math.max(rect.width,1);
-      const y = (e.clientY-rect.top)/Math.max(rect.height,1);
-      mouseTargetRef.current = [Math.max(0,Math.min(x,1)), Math.max(0,Math.min(y,1))];
+      const x = (e.clientX - rect.left) / Math.max(rect.width, 1);
+      const y = (e.clientY - rect.top) / Math.max(rect.height, 1);
+      mouseTargetRef.current = [Math.max(0, Math.min(x, 1)), Math.max(0, Math.min(y, 1))];
     };
-    container.addEventListener('pointermove', onPointer, { passive:true });
+    container.addEventListener('pointermove', onPointer, { passive: true });
 
-    let raf=0, last=performance.now(), acc=0;
-    const update = (now: number) => {
-      const dt = Math.max(0,now-last)*0.001; last=now;
+    let rafId = 0, lastFrameTime = 0, acc = 0;
+    const loop = (now: number) => {
+      rafId = requestAnimationFrame(loop);
+      if (!lastFrameTime) lastFrameTime = now;
+      const dt = (now - lastFrameTime) * 0.001;
+      if (dt < 0.016) return;
+      lastFrameTime = now - ((now - lastFrameTime) % 16);
+
       if (!pausedRef.current) acc += dt;
-      const tau = 0.02+Math.max(0,Math.min(1,hoverDampness))*0.5;
-      const alpha = 1-Math.exp(-dt/tau);
-      const tgt=mouseTargetRef.current, sm=mouseSmoothRef.current;
-      sm[0]+=(tgt[0]-sm[0])*alpha; sm[1]+=(tgt[1]-sm[1])*alpha;
+      const tau = 0.02 + Math.max(0, Math.min(1, hoverDampness)) * 0.5;
+      const alpha = 1 - Math.exp(-dt / tau);
+      const tgt = mouseTargetRef.current, sm = mouseSmoothRef.current;
+      sm[0] += (tgt[0] - sm[0]) * alpha; sm[1] += (tgt[1] - sm[1]) * alpha;
       program.uniforms.uMouse.value = sm;
       program.uniforms.uTime.value = acc;
-      renderer.render({ scene:mesh });
-      raf = requestAnimationFrame(update);
+      renderer.render({ scene: mesh });
     };
-    raf = requestAnimationFrame(update);
+    rafId = requestAnimationFrame(loop);
 
     return () => {
-      cancelAnimationFrame(raf); ro.disconnect();
+      cancelAnimationFrame(rafId); ro.disconnect();
       container.removeEventListener('pointermove', onPointer);
       try { container.removeChild(gl.canvas); } catch { /* noop */ }
-      programRef.current=null; rendererRef.current=null; gradTexRef.current=null;
+      programRef.current = null; rendererRef.current = null; gradTexRef.current = null;
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
-  }, [hoverDampness]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    const program=programRef.current, renderer=rendererRef.current, gradTex=gradTexRef.current;
-    if (!program||!renderer||!gradTex) return;
-    program.uniforms.uIntensity.value = intensity??1;
-    program.uniforms.uSpeed.value = speed??1;
-    program.uniforms.uAnimType.value = animTypeMap[animationType??'rotate3d']??1;
-    program.uniforms.uDistort.value = typeof distort==='number'?distort:0;
-    program.uniforms.uRayCount.value = Math.max(0,Math.floor(rayCount??0));
-    let count=0;
-    if (Array.isArray(colors)&&colors.length>0) {
-      const gl2=renderer.gl, capped=colors.slice(0,64); count=capped.length;
-      const data=new Uint8Array(count*4);
-      for (let i=0;i<count;i++){const [r,g,b]=hexToRgb01(capped[i]);data[i*4]=Math.round(r*255);data[i*4+1]=Math.round(g*255);data[i*4+2]=Math.round(b*255);data[i*4+3]=255;}
-      gradTex.image=data; gradTex.width=count; gradTex.height=1;
+    const program = programRef.current, renderer = rendererRef.current, gradTex = gradTexRef.current;
+    if (!program || !renderer || !gradTex) return;
+    program.uniforms.uIntensity.value = intensity ?? 1;
+    program.uniforms.uSpeed.value = speed ?? 1;
+    program.uniforms.uAnimType.value = animTypeMap[animationType ?? 'rotate3d'] ?? 1;
+    program.uniforms.uDistort.value = typeof distort === 'number' ? distort : 0;
+    program.uniforms.uRayCount.value = Math.max(0, Math.floor(rayCount ?? 0));
+    let count = 0;
+    if (Array.isArray(colors) && colors.length > 0) {
+      const gl2 = renderer.gl, capped = colors.slice(0, 64); count = capped.length;
+      const data = new Uint8Array(count * 4);
+      for (let i = 0; i < count; i++) { const [r, g, b] = hexToRgb01(capped[i]); data[i * 4] = Math.round(r * 255); data[i * 4 + 1] = Math.round(g * 255); data[i * 4 + 2] = Math.round(b * 255); data[i * 4 + 3] = 255; }
+      gradTex.image = data; gradTex.width = count; gradTex.height = 1;
       (gradTex as unknown as { needsUpdate: boolean }).needsUpdate = true;
-      void gl2;
     }
     program.uniforms.uColorCount.value = count;
   }, [intensity, speed, animationType, colors, distort, rayCount]);
 
-  return <div ref={containerRef} style={{ position:'absolute',inset:0,overflow:'hidden' }} />;
+  return <div ref={containerRef} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} />;
 };
 export default PrismaticBurst;

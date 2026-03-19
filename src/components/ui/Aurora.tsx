@@ -81,13 +81,23 @@ export default function Aurora({
     });
     const mesh = new Mesh(gl, { geometry, program });
     ctn.appendChild(gl.canvas as HTMLCanvasElement);
-    const resize = () => { renderer.setSize(ctn.offsetWidth, ctn.offsetHeight); (program!.uniforms.uResolution.value as number[]).splice(0, 2, ctn.offsetWidth, ctn.offsetHeight); };
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio, 1.5);
+      renderer.setSize(ctn.offsetWidth * dpr, ctn.offsetHeight * dpr);
+      (gl.canvas as HTMLCanvasElement).style.width = '100%';
+      (gl.canvas as HTMLCanvasElement).style.height = '100%';
+      (program!.uniforms.uResolution.value as number[]).splice(0, 2, ctn.offsetWidth * dpr, ctn.offsetHeight * dpr);
+    };
     window.addEventListener('resize', resize); resize();
     let raf = 0;
-    const update = (t: number) => {
+    let lastTime = performance.now();
+    const update = (now: number) => {
       raf = requestAnimationFrame(update);
+      if (now - lastTime < 16) return;
+      lastTime = now - ((now - lastTime) % 16);
+
       const p = propsRef.current;
-      program!.uniforms.uTime.value = t * 0.01 * p.speed * 0.1;
+      program!.uniforms.uTime.value = now * 0.01 * p.speed * 0.1;
       program!.uniforms.uAmplitude.value = p.amplitude;
       program!.uniforms.uBlend.value = p.blend;
       program!.uniforms.uColorStops.value = toStops(p.colorStops);

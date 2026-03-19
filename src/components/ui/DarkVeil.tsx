@@ -7,9 +7,10 @@ attribute vec2 position;
 void main(){gl_Position=vec4(position,0.0,1.0);}
 `;
 
+// IMPORTANT: highp is required here — lowp breaks the CPPN neural network math (all black/grey)
 const fragment = `
 #ifdef GL_ES
-precision lowp float;
+precision highp float;
 #endif
 uniform vec2 uResolution;
 uniform float uTime;
@@ -23,6 +24,7 @@ uniform float uWarp;
 
 vec4 buf[8];
 float rand(vec2 c){return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453);}
+
 mat3 rgb2yiq=mat3(0.299,0.587,0.114,0.596,-0.274,-0.322,0.211,-0.523,0.312);
 mat3 yiq2rgb=mat3(1.0,0.956,0.621,1.0,-0.272,-0.647,1.0,-1.106,1.703);
 
@@ -33,6 +35,7 @@ vec3 hueShiftRGB(vec3 col,float deg){
     vec3 yiqShift=vec3(yiq.x,yiq.y*cosh-yiq.z*sinh,yiq.y*sinh+yiq.z*cosh);
     return clamp(yiq2rgb*yiqShift,0.0,1.0);
 }
+
 vec4 sigmoid(vec4 x){return 1./(1.+exp(-x));}
 
 vec4 cppn_fn(vec2 coordinate,float in0,float in1,float in2){
@@ -62,15 +65,24 @@ void mainImage(out vec4 fragColor,in vec2 fragCoord){
     fragColor=cppn_fn(uv,0.1*sin(0.3*uTime),0.1*sin(0.69*uTime),0.1*sin(0.44*uTime));
 }
 
+uniform vec3 uTintColor;
 void main(){
     vec4 col;mainImage(col,gl_FragCoord.xy);
     col.rgb=hueShiftRGB(col.rgb,uHueShift);
+    // Recolor with accent color: extract luminance and tint
+    float lum=dot(col.rgb,vec3(0.2126,0.7152,0.0722));
+    col.rgb=mix(col.rgb,lum*uTintColor*2.0,0.65);
     float scanline_val=sin(gl_FragCoord.y*uScanFreq)*0.5+0.5;
     col.rgb*=1.-(scanline_val*scanline_val)*uScan;
     col.rgb+=(rand(gl_FragCoord.xy+uTime)-0.5)*uNoise;
     gl_FragColor=vec4(clamp(col.rgb,0.0,1.0),1.0);
 }
 `;
+
+const hexToRgb = (hex: string): [number, number, number] => {
+  const r = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r ? [parseInt(r[1], 16) / 255, parseInt(r[2], 16) / 255, parseInt(r[3], 16) / 255] : [1, 1, 1];
+};
 
 interface DarkVeilProps {
   hueShift?: number;
@@ -80,6 +92,7 @@ interface DarkVeilProps {
   scanlineFrequency?: number;
   warpAmount?: number;
   resolutionScale?: number;
+  tintColor?: string;
 }
 
 export default function DarkVeil({
@@ -90,18 +103,22 @@ export default function DarkVeil({
   scanlineFrequency = 0,
   warpAmount = 0,
   resolutionScale = 1,
+  tintColor = '#ffffff',
 }: DarkVeilProps) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const programRef = useRef<Program | null>(null);
+  const speedRef = useRef(speed);
+  speedRef.current = speed;
 
+  // Init once — no shader recompilation on prop changes
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas) return;
-
     const parent = canvas.parentElement;
     if (!parent) return;
 
     const renderer = new Renderer({
-      dpr: Math.min(window.devicePixelRatio, 2),
+      dpr: Math.min(window.devicePixelRatio, 1.5),
       canvas,
     });
 
@@ -119,8 +136,10 @@ export default function DarkVeil({
         uScan: { value: scanlineIntensity },
         uScanFreq: { value: scanlineFrequency },
         uWarp: { value: warpAmount },
+        uTintColor: { value: hexToRgb(tintColor) },
       },
     });
+    programRef.current = program;
 
     const mesh = new Mesh(gl, { geometry, program });
 
@@ -128,9 +147,8 @@ export default function DarkVeil({
       const w = parent.clientWidth;
       const h = parent.clientHeight;
       renderer.setSize(w * resolutionScale, h * resolutionScale);
-      // Override CSS size so canvas stays within container
-      Object.assign((canvas as HTMLCanvasElement).style, { width: '100%', height: '100%', position: 'absolute', top: '0', left: '0' });
-      (program.uniforms.uResolution.value as Vec2).set(w, h);
+      Object.assign(canvas.style, { width: '100%', height: '100%', position: 'absolute', top: '0', left: '0' });
+      (program.uniforms.uResolution.value as Vec2).set(w * resolutionScale, h * resolutionScale);
     };
 
     window.addEventListener('resize', resize);
@@ -138,25 +156,51 @@ export default function DarkVeil({
 
     const start = performance.now();
     let frame = 0;
+    let lastTime = 0;
+    let running = true; // guard against React StrictMode double-invoke
+    const interval = 1000 / 60;
 
-    const loop = () => {
-      program.uniforms.uTime.value = ((performance.now() - start) / 1000) * speed;
-      program.uniforms.uHueShift.value = hueShift;
-      program.uniforms.uNoise.value = noiseIntensity;
-      program.uniforms.uScan.value = scanlineIntensity;
-      program.uniforms.uScanFreq.value = scanlineFrequency;
-      program.uniforms.uWarp.value = warpAmount;
-      renderer.render({ scene: mesh });
+    const loop = (timestamp: number) => {
+      if (!running) return; // stop immediately if cleanup was called
       frame = requestAnimationFrame(loop);
+      if (!lastTime) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      if (delta < interval) return;
+      lastTime = timestamp - (delta % interval);
+
+      program.uniforms.uTime.value = ((timestamp - start) / 1000) * speedRef.current;
+      renderer.render({ scene: mesh });
     };
 
-    loop();
+    frame = requestAnimationFrame(loop);
 
     return () => {
+      running = false; // stops loop immediately, even if a frame is already queued
       cancelAnimationFrame(frame);
       window.removeEventListener('resize', resize);
+      // NOTE: do NOT call loseContext() here — React StrictMode mounts effects twice,
+      // so destroying the context on the first cleanup would crash the second mount.
+      programRef.current = null;
     };
-  }, [hueShift, noiseIntensity, scanlineIntensity, speed, scanlineFrequency, warpAmount, resolutionScale]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resolutionScale]); // only re-init if resolution changes
+
+  // Update uniforms without recompiling shader
+  useEffect(() => {
+    const p = programRef.current;
+    if (!p) return;
+    p.uniforms.uHueShift.value = hueShift;
+    p.uniforms.uNoise.value = noiseIntensity;
+    p.uniforms.uScan.value = scanlineIntensity;
+    p.uniforms.uScanFreq.value = scanlineFrequency;
+    p.uniforms.uWarp.value = warpAmount;
+  }, [hueShift, noiseIntensity, scanlineIntensity, scanlineFrequency, warpAmount]);
+
+  useEffect(() => {
+    const p = programRef.current;
+    if (!p) return;
+    p.uniforms.uTintColor.value = hexToRgb(tintColor);
+  }, [tintColor]);
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>

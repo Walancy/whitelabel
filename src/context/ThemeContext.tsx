@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import { buildButtonCSS, DEFAULT_BTN_CONFIG, type ButtonStyleConfig } from '@/components/ui/buttonStyleModels';
 
 type Theme = 'light' | 'dark';
 type VisualPattern = 'nexus' | 'shopeers' | 'projectli' | 'magika' | 'workly' | 'taskplus' | 'eevo' | 'quantum' | 'resync';
 export type AuthBgKey =
   | 'none' | 'dark-veil' | 'soft-aurora' | 'aurora' | 'iridescence' | 'silk'
   | 'color-bends' | 'pixel-blast' | 'beams' | 'gradient-blinds' | 'liquid-ether'
-  | 'plasma' | 'line-waves' | 'light-rays' | 'light-pillar' | 'orb'
-  | 'dot-grid' | 'prism' | 'prismatic-burst' | 'shape-grid';
+  | 'line-waves' | 'light-rays' | 'grainient' | 'grid-distortion'
+  | 'dot-grid' | 'shape-grid';
 
 export type AuthBgConfig = Record<string, number | string | boolean>;
 
@@ -31,6 +32,8 @@ interface ThemeContextType {
   setAuthBg: (bg: AuthBgKey) => void;
   authBgConfigs: Record<string, AuthBgConfig>;
   setAuthBgConfig: (bg: AuthBgKey, config: AuthBgConfig) => void;
+  buttonStyleConfig: ButtonStyleConfig;
+  setButtonStyleConfig: (cfg: ButtonStyleConfig) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -64,6 +67,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [authBg, setAuthBgState] = useState<AuthBgKey>(
     () => (localStorage.getItem('authBg') as AuthBgKey) || 'none');
   const [authBgConfigs, setAuthBgConfigsState] = useState<Record<string, AuthBgConfig>>(parseConfigs);
+  const [buttonStyleConfig, setButtonStyleConfigState] = useState<ButtonStyleConfig>(() => {
+    try { return JSON.parse(localStorage.getItem('buttonStyleConfig') || 'null') || DEFAULT_BTN_CONFIG; }
+    catch { return DEFAULT_BTN_CONFIG; }
+  });
 
   const activeAccentColor = useMemo(
     () => (useCustomAccent ? accentColor : PATTERN_DEFAULTS[visualPattern]),
@@ -86,7 +93,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('authFormWidth', String(authFormWidth));
     localStorage.setItem('authBg', authBg);
     localStorage.setItem('authBgConfigs', JSON.stringify(authBgConfigs));
-  }, [visualPattern, useCustomAccent, borderRadius, showShadows, authFormWidth, authBg, authBgConfigs]);
+    localStorage.setItem('buttonStyleConfig', JSON.stringify(buttonStyleConfig));
+  }, [visualPattern, useCustomAccent, borderRadius, showShadows, authFormWidth, authBg, authBgConfigs, buttonStyleConfig]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -103,10 +111,30 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('accentColor', accentColor);
   }, [activeAccentColor, accentColor, borderRadius, showShadows, authFormWidth]);
 
+  // Inject button style CSS
+  useEffect(() => {
+    const css = buildButtonCSS(buttonStyleConfig);
+    const id = 'btn-style-override';
+    let el = document.getElementById(id) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    el.textContent = css;
+    const root = document.documentElement;
+    if (buttonStyleConfig.model !== 'default' || css.trim()) {
+      root.dataset.btnModel = buttonStyleConfig.model;
+    } else {
+      delete root.dataset.btnModel;
+    }
+  }, [buttonStyleConfig]);
+
   const setAccentColor = (color: string) => { setAccentColorState(color); setUseCustomAccent(true); };
   const setAuthBg = (bg: AuthBgKey) => setAuthBgState(bg);
   const setAuthBgConfig = (bg: AuthBgKey, config: AuthBgConfig) =>
     setAuthBgConfigsState(prev => ({ ...prev, [bg]: config }));
+  const setButtonStyleConfig = (cfg: ButtonStyleConfig) => setButtonStyleConfigState(cfg);
   const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   const togglePattern = () => setVisualPattern(prev => {
     const list: VisualPattern[] = ['nexus', 'shopeers', 'projectli', 'magika', 'workly', 'taskplus', 'eevo', 'quantum', 'resync'];
@@ -121,6 +149,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       borderRadius, setBorderRadius, showShadows, setShowShadows,
       authFormWidth, setAuthFormWidth,
       authBg, setAuthBg, authBgConfigs, setAuthBgConfig,
+      buttonStyleConfig, setButtonStyleConfig,
     }}>
       {children}
     </ThemeContext.Provider>

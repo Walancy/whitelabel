@@ -54,14 +54,15 @@ export default function Plasma({
   color = '#ffffff', speed = 1, scale = 1, opacity = 1, mouseInteractive = true,
 }: PlasmaProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const programRef = useRef<Program | null>(null);
 
   useEffect(() => {
     const ctn = ref.current;
     if (!ctn) return;
-    const renderer = new Renderer({ webgl: 2, alpha: true, antialias: false, dpr: Math.min(window.devicePixelRatio, 2) } as ConstructorParameters<typeof Renderer>[0]);
+    const renderer = new Renderer({ webgl: 2, alpha: true, antialias: false, dpr: Math.min(window.devicePixelRatio, 1.25) } as ConstructorParameters<typeof Renderer>[0]);
     const gl = renderer.gl;
     const canvas = gl.canvas as HTMLCanvasElement;
-    Object.assign(canvas.style, { display: 'block', width: '100%', height: '100%' });
+    Object.assign(canvas.style, { display: 'block', width: '100%', height: '100%', position: 'absolute', inset: 0 });
     ctn.appendChild(canvas);
     const geometry = new Triangle(gl);
     const program = new Program(gl, {
@@ -74,6 +75,7 @@ export default function Plasma({
         uMouseInteractive: { value: mouseInteractive ? 1 : 0 },
       },
     });
+    programRef.current = program;
     const mesh = new Mesh(gl, { geometry, program });
     const setSize = () => {
       const rect = ctn.getBoundingClientRect();
@@ -84,26 +86,44 @@ export default function Plasma({
     const ro = new ResizeObserver(setSize);
     ro.observe(ctn);
     const onMove = (e: MouseEvent) => {
-      const m = program.uniforms.uMouse.value as Float32Array;
+      if (!programRef.current) return;
+      const m = programRef.current.uniforms.uMouse.value as Float32Array;
       const rect = ctn.getBoundingClientRect();
-      m[0] = e.clientX - rect.left; m[1] = e.clientY - rect.top;
+      m[0] = (e.clientX - rect.left) * (gl.canvas.width / rect.width);
+      m[1] = (rect.height - (e.clientY - rect.top)) * (gl.canvas.height / rect.height);
     };
-    if (mouseInteractive) ctn.addEventListener('mousemove', onMove);
-    let raf = 0;
-    const update = (t: number) => {
-      raf = requestAnimationFrame(update);
-      program.uniforms.iTime.value = t * 0.001;
+    if (mouseInteractive) window.addEventListener('mousemove', onMove);
+    let rafId = 0, lastTime = 0;
+    const update = (timestamp: number) => {
+      rafId = requestAnimationFrame(update);
+      if (!lastTime) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      if (delta < 16.6) return;
+      lastTime = timestamp - (delta % 16.6);
+      program.uniforms.iTime.value = timestamp * 0.001;
       renderer.render({ scene: mesh });
     };
-    raf = requestAnimationFrame(update);
+    rafId = requestAnimationFrame(update);
     return () => {
-      cancelAnimationFrame(raf);
+      cancelAnimationFrame(rafId);
       ro.disconnect();
-      if (mouseInteractive) ctn.removeEventListener('mousemove', onMove);
+      if (mouseInteractive) window.removeEventListener('mousemove', onMove);
       if (canvas.parentElement === ctn) ctn.removeChild(canvas);
       gl.getExtension('WEBGL_lose_context')?.loseContext();
+      programRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Static init
+
+  useEffect(() => {
+    const p = programRef.current;
+    if (!p) return;
+    p.uniforms.uCustomColor.value = new Float32Array(hexToRgb(color));
+    p.uniforms.uSpeed.value = speed * 0.4;
+    p.uniforms.uScale.value = scale;
+    p.uniforms.uOpacity.value = opacity;
+    p.uniforms.uMouseInteractive.value = mouseInteractive ? 1 : 0;
   }, [color, speed, scale, opacity, mouseInteractive]);
 
-  return <div ref={ref} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }} />;
+  return <div ref={ref} style={{ position: 'absolute', inset: 0, overflow: 'hidden' }} />;
 }

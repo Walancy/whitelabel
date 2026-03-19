@@ -1,93 +1,173 @@
 import { useState } from 'react';
-import { Github, Eye, EyeOff, ArrowRight, RefreshCcw, Cloud, Lock } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { GoogleIcon } from '@/components/ui/social-icons';
 import { AuthBackground } from '@/components/ui/AuthBackground';
 import { useTheme } from '@/context/ThemeContext';
 
 export const ReSyncAuth = ({ onLogin }: { onLogin: () => void }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { activeAccentColor } = useTheme();
-  const accentHsl = `hsl(${activeAccentColor})`;
+  const [remember, setRemember] = useState(false);
+  const { theme } = useTheme();
+  const logoSrc = theme === 'dark' ? '/logo branca.svg' : '/logo preta.svg';
 
   return (
     <div className="min-h-screen w-full flex bg-background text-foreground font-sans overflow-hidden">
-      {/* Left Side */}
-      <div className="hidden lg:flex flex-col lg:min-w-0 bg-[#050C0D] relative p-16 justify-between lg:w-[calc((100-var(--auth-form-width))*1%)]">
-        <AuthBackground />
-        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/75 via-black/40 to-black/75 pointer-events-none" />
 
-        <div className="relative z-10 animate-in fade-in slide-in-from-left duration-700">
-          <div className="flex items-center gap-3 mb-20">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `hsl(${activeAccentColor} / 0.2)`, borderColor: `hsl(${activeAccentColor} / 0.4)`, borderWidth: 1 }}>
-              <RefreshCcw style={{ color: accentHsl }} size={18} />
+      {/* ── Left: Form panel ─────────────────────────────────────────────── */}
+      <div className="w-full lg:min-w-0 flex flex-col justify-center p-10 lg:p-14 lg:w-[calc(var(--auth-form-width)*1%)]">
+
+        <div className="w-full max-w-[360px] mx-auto flex flex-col">
+
+          {/* Logo */}
+          <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain object-left mb-10" draggable={false} />
+
+          {/* Heading */}
+          <div className="space-y-1 mb-7">
+            <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+            <p className="text-sm text-muted-foreground">Sign in to access your workspace</p>
+          </div>
+
+          {/* Google */}
+          <button
+            type="button"
+            className="w-full h-11 flex items-center justify-center gap-2.5 rounded-[var(--radius)] border border-border hover:bg-accent/20 active:scale-[0.99] transition-all text-sm font-medium mb-5"
+          >
+            <GoogleIcon size={18} />
+            <span>Login With Google</span>
+          </button>
+
+          {/* OR */}
+          <div className="flex items-center gap-3 mb-5">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs text-muted-foreground">OR</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={(e) => { e.preventDefault(); onLogin(); }} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-muted-foreground">Email</label>
+              <input
+                type="email"
+                placeholder="you@example.com"
+                className="h-10 w-full rounded-[var(--radius)] border border-border bg-accent/10 px-3.5 text-sm placeholder:text-muted-foreground/40 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+              />
             </div>
-            <span className="text-xl font-bold tracking-[0.2em] text-white">
-              RE<span style={{ color: accentHsl }}>SYNC</span>
-            </span>
-          </div>
 
-          <h1 className="text-6xl font-black tracking-tight leading-[0.9] text-white mb-8">
-            UNIFIED <br />
-            <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${accentHsl}, hsl(${activeAccentColor} / 0.6))` }}>SYNC.</span>
-          </h1>
-          <p className="text-white/40 text-sm font-medium leading-relaxed max-w-sm">
-            Experience the most advanced file synchronization ecosystem. Seamlessly integrated across all nodes.
-          </p>
-
-          <div className="mt-20 flex flex-col gap-6">
-            {[{ icon: <Cloud size={16} style={{ color: accentHsl }} />, label: 'Cloud Persistence' },
-              { icon: <Lock size={16} style={{ color: accentHsl }} />, label: 'Zero-Knowledge Enc' }].map(({ icon, label }) => (
-              <div key={label} className="flex items-center gap-4 group cursor-default">
-                <div className="p-2 bg-white/5 rounded-lg group-hover:bg-white/10 transition-all">{icon}</div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative z-10 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.5em] text-white/20">
-          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accentHsl }} />
-          <span>Channel Secured</span>
-        </div>
-      </div>
-
-      {/* Right Side */}
-      <div className="w-full lg:min-w-0 flex flex-col items-center justify-center p-8 lg:p-20 bg-background relative z-10 shadow-2xl lg:w-[calc(var(--auth-form-width)*1%)]">
-        <div className="w-full max-w-sm space-y-12 animate-in fade-in slide-in-from-right duration-700">
-          <div className="space-y-2">
-            <h2 className="text-4xl font-black tracking-tighter uppercase">Connect</h2>
-            <div className="h-0.5 w-16 opacity-60" style={{ backgroundColor: accentHsl }} />
-          </div>
-
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] ml-1">Terminal ID</label>
-              <input type="email" placeholder="sync-node@resync.hub" className="w-full h-11 bg-accent/20 border border-border rounded-lg px-5 text-sm font-semibold focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em] ml-1">Keyphrase</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-muted-foreground">Password</label>
               <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} placeholder="••••••••" className="w-full h-11 bg-accent/20 border border-border rounded-lg px-5 pr-12 text-sm font-semibold focus:ring-1 focus:ring-primary focus:border-primary transition-all outline-none" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-all">
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
+                  className="h-10 w-full rounded-[var(--radius)] border border-border bg-accent/10 px-3.5 pr-10 text-sm placeholder:text-muted-foreground/40 outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
-            <button type="submit" className="w-full h-11 bg-primary text-primary-foreground rounded-lg font-black text-xs uppercase tracking-[0.3em] hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-3 mt-6">
-              Sync Session <ArrowRight size={18} />
+
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="w-3.5 h-3.5 rounded accent-primary cursor-pointer"
+              />
+              <span className="text-sm text-muted-foreground">
+                I Agree to{' '}
+                <span className="text-foreground font-medium cursor-pointer hover:underline underline-offset-2">
+                  Terms of Service &amp; Policies
+                </span>
+              </span>
+            </label>
+
+            <button
+              type="submit"
+              className="h-11 w-full rounded-[var(--radius)] bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 hover:brightness-105 active:scale-[0.99] transition-all mt-1"
+            >
+              Sign In <ArrowRight size={16} />
             </button>
           </form>
 
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-3 h-11 rounded-lg border border-border bg-card hover:bg-accent transition-all active:scale-[0.98]">
-              <GoogleIcon size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Google</span>
-            </button>
-            <button className="flex items-center justify-center gap-3 h-11 rounded-lg border border-border bg-card hover:bg-accent transition-all active:scale-[0.98]">
-              <Github size={16} /><span className="text-[10px] font-bold uppercase tracking-widest">Github</span>
-            </button>
-          </div>
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            Don't have an account?{' '}
+            <span className="font-semibold text-foreground cursor-pointer hover:underline underline-offset-2">
+              Create an account
+            </span>
+          </p>
+
         </div>
       </div>
+
+      {/* ── Right: Image panel wrapper ───────────────────────────────────────
+          The wrapper has padding on 3 sides (top, right, bottom) but NOT left.
+          bg-background on the wrapper = same color as form → creates the
+          white "frame" gap around the dark image on those 3 sides.
+          The wrapper itself provides the white space; the dark image inside
+          has rounded corners EXCEPT at top-left and bottom-right.
+          Two tiny bg-background squares with an inner border-radius are placed
+          at those two corners to create the concave/inverted corner illusion.  */}
+      <div className="hidden lg:flex flex-col relative lg:min-w-0 flex-1 p-4 pl-0">
+
+        {/* Dark image panel — rounded everywhere EXCEPT TL and BR */}
+        <div className="flex-1 rounded-2xl rounded-tl-none rounded-br-none overflow-hidden relative bg-[#111]">
+          <AuthBackground />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none z-[1]" />
+
+          {/* Bottom overlay text */}
+          <div className="absolute bottom-0 left-0 right-0 z-[2] p-10">
+            <h2 className="text-2xl font-semibold text-white leading-tight mb-2">
+              Crafted For The<br />Ultimate Experience
+            </h2>
+            <p className="text-sm text-white/50 max-w-xs leading-relaxed mb-5">
+              Our tools are engineered with precision and premium materials,
+              built to elevate every workflow.
+            </p>
+            <div className="flex items-center gap-5">
+              <div className="flex items-center gap-1.5 text-white/60">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                <span className="text-xs font-medium">Fully Customizable</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-white/60">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                <span className="text-xs font-medium">Built To Order</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── SVG concave corners ───────────────────────────────────────────
+            Each SVG is placed directly on top of the image panel's flat corner.
+            The quarter-circle path (filled with bg-background) "masks" the
+            image's square corner, creating the concave/inverted radius illusion. */}
+
+        {/* Top-left concave — at the image panel's TL corner (top-4, left-0) */}
+        <svg
+          className="absolute top-4 left-0 z-[3] pointer-events-none"
+          width="20" height="20" viewBox="0 0 20 20"
+          style={{ fill: 'hsl(var(--background))' }}
+        >
+          {/* Arc from top-right to bottom-left — fills the corner with bg color */}
+          <path d="M 20 0 A 20 20 0 0 0 0 20 L 0 0 Z" />
+        </svg>
+
+        {/* Bottom-right concave — at the image panel's BR corner (bottom-4, right-4) */}
+        <svg
+          className="absolute bottom-4 right-4 z-[3] pointer-events-none"
+          width="20" height="20" viewBox="0 0 20 20"
+          style={{ fill: 'hsl(var(--background))' }}
+        >
+          {/* Arc from bottom-left to top-right — fills the corner with bg color */}
+          <path d="M 0 20 A 20 20 0 0 0 20 0 L 20 20 Z" />
+        </svg>
+      </div>
+
     </div>
   );
 };
