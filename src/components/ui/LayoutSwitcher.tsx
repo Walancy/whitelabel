@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { 
-  Palette, CheckCircle2, Sliders, Moon, Sun, 
-  PanelLeft, PanelRight, Layers, Settings2, ChevronDown, 
-  Wand2, MousePointer2, ImageIcon, Copy, Check as CheckIcon
+import {
+  Palette, CheckCircle2, Moon, Sun,
+  PanelLeft, PanelRight, Layers, Settings2, ChevronDown,
+  Wand2, Copy, Check as CheckIcon, ImageIcon
 } from 'lucide-react';
 import { useTheme, type DashboardBgEffect, type SidebarActiveStyle } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -31,7 +31,8 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
     accentColor, setAccentColor, useCustomAccent, setUseCustomAccent,
     activeAccentColor, borderRadius, setBorderRadius, showShadows, setShowShadows,
     authFormWidth, setAuthFormWidth, authFormSide, setAuthFormSide,
-    authBg, setAuthBg, dashboardConfig, setDashboardConfig
+    authBg, setAuthBg, dashboardConfig, setDashboardConfig,
+    dashboardModel, setDashboardModel
   } = useTheme();
 
   const [activeMenu, setActiveMenu] = useState<'visual' | 'color' | 'layout' | 'radius' | 'authbg' | 'form' | 'buttons' | 'dashbg' | null>(null);
@@ -220,7 +221,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
     ];
     return lines.join('\n');
   }, [visualPattern, theme, accentColor, activeAccentColor, accentColorName, useCustomAccent,
-      borderRadius, showShadows, dashboardConfig, patternNames]);
+    borderRadius, showShadows, dashboardConfig, patternNames]);
 
   const handleCopyPrompt = useCallback(async () => {
     const prompt = buildConfigPrompt();
@@ -231,26 +232,56 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
 
   return (
     <div ref={dockRef} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center select-none font-sans">
-      
+
       {/* ===================== POPOVERS ===================== */}
-      
+
       {activeMenu === 'visual' && (
-        <Popover title="Visual Layout">
-          <ul className="flex flex-col gap-0.5 max-h-[250px] overflow-y-auto scrollbar-stylized pr-1">
-            {patterns.map((pattern) => (
-              <li
-                key={pattern.id}
-                onClick={() => setVisualPattern(pattern.id)}
-                className={cn(
-                  'flex items-center justify-between px-3 py-2 text-xs rounded-md cursor-pointer transition-colors',
-                  visualPattern === pattern.id ? 'bg-white/15 font-semibold text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
-                )}
-              >
-                <span>{pattern.name}</span>
-                {visualPattern === pattern.id && <CheckCircle2 size={12} />}
-              </li>
-            ))}
-          </ul>
+        <Popover title="Visual & Dashboard" isWide>
+          <div className="flex flex-col gap-3">
+            <div>
+              <span className="text-[10px] text-white/50 uppercase font-semibold mb-1.5 block px-1">Dashboard Model</span>
+              <div className="grid grid-cols-2 gap-1.5 px-0.5">
+                {([
+                  { value: 'nexus' as const, label: 'Modelo A' },
+                  { value: 'shopeers' as const, label: 'Modelo B' },
+                  { value: 'projectli' as const, label: 'Modelo C' },
+                  { value: 'workly' as const, label: 'Modelo D' },
+                ]).map(model => (
+                  <button
+                    key={model.value}
+                    onClick={() => setDashboardModel(model.value)}
+                    className={cn(
+                      "text-[9px] py-2 px-1 rounded-md transition-all font-semibold border",
+                      dashboardModel === model.value
+                        ? "bg-white/10 text-white border-white/20 shadow-sm"
+                        : "bg-transparent text-white/50 border-white/5 hover:bg-white/5 hover:text-white/80"
+                    )}
+                  >
+                    {model.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="h-px bg-white/10" />
+            <div>
+              <span className="text-[10px] text-white/50 uppercase font-semibold mb-1.5 block px-1">Visual Layout</span>
+              <ul className="flex flex-col gap-0.5 max-h-[200px] overflow-y-auto scrollbar-stylized pr-1">
+                {patterns.map((pattern) => (
+                  <li
+                    key={pattern.id}
+                    onClick={() => setVisualPattern(pattern.id)}
+                    className={cn(
+                      'flex items-center justify-between px-3 py-2 text-xs rounded-md cursor-pointer transition-colors',
+                      visualPattern === pattern.id ? 'bg-white/15 font-semibold text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    )}
+                  >
+                    <span>{pattern.name}</span>
+                    {visualPattern === pattern.id && <CheckCircle2 size={12} />}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </Popover>
       )}
 
@@ -273,7 +304,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                   {useCustomAccent && accentColor === color.value && <CheckCircle2 size={12} className="text-white mix-blend-difference" />}
                 </button>
               ))}
-              
+
               {/* Custom Color Wheel Picker */}
               <div className="relative w-8 h-8 rounded-full group cursor-pointer" title="Cor personalizada">
                 <input
@@ -292,14 +323,14 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                     <div className="w-5 h-5 rounded-full border-2 border-white/40 shadow-sm" style={{ backgroundColor: `hsl(${accentColor})`, borderStyle: 'solid', borderWidth: '2px', borderColor: 'rgba(255,255,255,0.4)' }} />
                   ) : (
                     <div className="w-5 h-5 rounded-full bg-[#2c2c2c] flex items-center justify-center border border-white/10 group-hover:scale-90 transition-transform">
-                      <Sliders size={10} className="text-white/80" />
+                      <Settings2 size={10} className="text-white/80" />
                     </div>
                   )}
                 </div>
               </div>
 
             </div>
-            
+
             <div className="h-px bg-white/10" />
 
             <div className="flex items-center justify-between bg-white/5 p-2 rounded-lg px-3">
@@ -347,7 +378,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
           </div>
         </Popover>
       )}
-      {activeMenu === 'dashbg' && !showFormWidthOption && (
+      {activeMenu === 'dashbg' && !showFormWidthOption && settingsMode !== 'authbg' && (
         <Popover title="Fundo & Chrome" isWide className="max-h-[500px] overflow-y-auto scrollbar-stylized">
           <div className="flex flex-col gap-4">
 
@@ -371,7 +402,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                       <div className="absolute inset-0 rounded-full" style={{ backgroundColor: `hsl(${dashboardConfig.bgGradientColor})` }} />
                     </div>
                     <div className="flex flex-wrap gap-1.5 flex-1">
-                      {['142 71% 45%','221 83% 53%','262 83% 58%','0 84.2% 60.2%','37.7 92.1% 50.2%','173.4 80.4% 40%','330 81% 60%','84 100% 59%'].map(c => (
+                      {['142 71% 45%', '221 83% 53%', '262 83% 58%', '0 84.2% 60.2%', '37.7 92.1% 50.2%', '173.4 80.4% 40%', '330 81% 60%', '84 100% 59%'].map(c => (
                         <button key={c} onClick={() => setDashboardConfig(p => ({ ...p, bgGradientColor: c }))}
                           className={cn('w-5 h-5 rounded-full border transition-all', dashboardConfig.bgGradientColor === c ? 'border-white scale-110' : 'border-transparent opacity-70 hover:scale-110')}
                           style={{ backgroundColor: `hsl(${c})` }} />
@@ -428,31 +459,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
               )}
             </div>
 
-            <div className="h-px bg-white/10" />
 
-            {/* ── Header & Sidebar Chrome (unificado) ── */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[10px] text-white/50 uppercase font-semibold px-1">Header & Sidebar</span>
-              <div><div className="flex justify-between text-[10px] text-white/50 mb-0.5 px-1"><span>Opacidade</span><span className="font-mono">{dashboardConfig.chromeOpacity}%</span></div>
-                <input type="range" min={10} max={100} step={5} value={dashboardConfig.chromeOpacity}
-                  onChange={(e) => setDashboardConfig(p => ({ ...p, chromeOpacity: Number(e.target.value) }))}
-                  className="w-full cursor-pointer accent-blue-500 h-1" style={{ appearance: 'auto' }} /></div>
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] text-white/60">Backdrop Blur</span>
-                <button onClick={() => setDashboardConfig(p => ({ ...p, chromeBlur: !p.chromeBlur }))}
-                  className={cn('relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full transition-colors', dashboardConfig.chromeBlur ? 'bg-blue-500' : 'bg-white/20')}>
-                  <span className={cn('pointer-events-none inline-block h-2 w-2 transform rounded-full bg-white ring-0 transition-transform', dashboardConfig.chromeBlur ? 'translate-x-4' : 'translate-x-1')} />
-                </button>
-              </div>
-              {dashboardConfig.chromeBlur && (
-                <div><div className="flex justify-between text-[10px] text-white/50 mb-0.5 px-1"><span>Intensidade</span><span className="font-mono">{dashboardConfig.chromeBlurIntensity}px</span></div>
-                  <input type="range" min={2} max={40} step={1} value={dashboardConfig.chromeBlurIntensity}
-                    onChange={(e) => setDashboardConfig(p => ({ ...p, chromeBlurIntensity: Number(e.target.value) }))}
-                    className="w-full cursor-pointer accent-blue-500 h-1" style={{ appearance: 'auto' }} /></div>
-              )}
-            </div>
-
-            <div className="h-px bg-white/10" />
 
             {/* ── Cards ── */}
             <div className="flex flex-col gap-2">
@@ -504,7 +511,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                         <div className="absolute inset-0 rounded-full" style={{ backgroundColor: `hsl(${dashboardConfig.cardGradientColor})` }} />
                       </div>
                       <div className="flex gap-1">
-                        {['142 71% 45%','221 83% 53%','262 83% 58%','0 84.2% 60.2%','37.7 92.1% 50.2%','330 81% 60%','84 100% 59%'].map(c => (
+                        {['142 71% 45%', '221 83% 53%', '262 83% 58%', '0 84.2% 60.2%', '37.7 92.1% 50.2%', '330 81% 60%', '84 100% 59%'].map(c => (
                           <button key={c} onClick={() => setDashboardConfig(p => ({ ...p, cardGradientColor: c }))}
                             className={cn('w-4 h-4 rounded-full border transition-all', dashboardConfig.cardGradientColor === c ? 'border-white scale-110' : 'border-transparent opacity-70 hover:scale-110')}
                             style={{ backgroundColor: `hsl(${c})` }} />
@@ -533,53 +540,49 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
       )}
 
       {activeMenu === 'layout' && !showFormWidthOption && (
-        <Popover title="Dashboard Config" isWide>
+        <Popover title="Sidebar Config" isWide className="max-h-[500px] overflow-y-auto scrollbar-stylized">
           <div className="flex flex-col gap-4">
             <div>
               <span className="text-xs text-white/70 mb-2 block px-1">Estilo do Botão Ativo</span>
-              <div className="grid grid-cols-2 gap-1.5 px-0.5">
-                {([
-                  { value: 'left-border', label: 'Workly (Left Border)' },
-                  { value: 'gradient', label: 'Degradê Suave' },
-                  { value: 'solid', label: 'Fundo Sólido' },
-                  { value: 'soft', label: 'Fundo Suave' },
-                  { value: 'glass', label: 'Morfismo (Glass)' },
-                  { value: 'minimal', label: 'Minimalista' },
-                  { value: 'workly-neon', label: 'Workly Neon Glow' },
-                ] as { value: SidebarActiveStyle; label: string }[]).map(style => (
-                  <button
-                    key={style.value}
-                    onClick={() => setDashboardConfig(p => ({ ...p, sidebarActiveStyle: style.value }))}
-                    className={cn(
-                      "text-[9px] py-2 px-1 rounded-md transition-all font-semibold border",
-                      dashboardConfig.sidebarActiveStyle === style.value 
-                        ? "bg-white/10 text-white border-white/20 shadow-sm" 
-                        : "bg-transparent text-white/50 border-white/5 hover:bg-white/5 hover:text-white/80"
-                    )}
-                  >
-                     {style.label}
-                  </button>
-                ))}
+              <div className="relative">
+                <select
+                  value={dashboardConfig.sidebarActiveStyle}
+                  onChange={(e) => setDashboardConfig(p => ({ ...p, sidebarActiveStyle: e.target.value as SidebarActiveStyle }))}
+                  className="w-full bg-white/10 border border-white/20 text-white text-xs rounded-lg px-3 py-2 pr-7 appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  {([
+                    { value: 'left-border', label: 'Workly (Left Border)' },
+                    { value: 'gradient', label: 'Degradê Suave' },
+                    { value: 'solid', label: 'Fundo Sólido' },
+                    { value: 'soft', label: 'Fundo Suave' },
+                    { value: 'glass', label: 'Morfismo (Glass)' },
+                    { value: 'minimal', label: 'Minimalista' },
+                    { value: 'workly-neon', label: 'Workly Neon Glow' },
+                  ] as { value: SidebarActiveStyle; label: string }[]).map(style => (
+                    <option key={style.value} value={style.value} className="bg-[#2c2c2c] text-white">{style.label}</option>
+                  ))}
+                </select>
+                <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none" />
               </div>
             </div>
 
             <div>
               <span className="text-xs text-white/70 mb-1 block px-1">Cor do Texto (Botão Ativo)</span>
               <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
-                 {([
-                   { value: 'foreground', label: 'Padrão' },
-                   { value: 'white', label: 'Branco' },
-                   { value: 'black', label: 'Preto' },
-                   { value: 'primary', label: 'Destaque' }
-                 ] as const).map(color => (
-                    <button
-                      key={color.value}
-                      onClick={() => setDashboardConfig(p => ({ ...p, sidebarActiveTextColor: color.value as any }))}
-                      className={cn("flex-1 px-1 py-1 rounded-md transition-all text-[9px] uppercase font-bold", dashboardConfig.sidebarActiveTextColor === color.value ? "bg-white/15 text-white" : "text-white/50 hover:bg-white/10 hover:text-white")}
-                    >
-                      {color.label}
-                    </button>
-                 ))}
+                {([
+                  { value: 'foreground', label: 'Padrão' },
+                  { value: 'white', label: 'Branco' },
+                  { value: 'black', label: 'Preto' },
+                  { value: 'primary', label: 'Destaque' }
+                ] as const).map(color => (
+                  <button
+                    key={color.value}
+                    onClick={() => setDashboardConfig(p => ({ ...p, sidebarActiveTextColor: color.value as any }))}
+                    className={cn("flex-1 px-1 py-1 rounded-md transition-all text-[9px] uppercase font-bold", dashboardConfig.sidebarActiveTextColor === color.value ? "bg-white/15 text-white" : "text-white/50 hover:bg-white/10 hover:text-white")}
+                  >
+                    {color.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -626,24 +629,48 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                 />
               </div>
             </div>
-            
+
             <div>
-               <span className="text-[10px] text-white/70 uppercase mb-1 block px-1">Cores dos Outros Ícones</span>
-               <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
-                 {([
-                   { value: 'foreground', label: 'Padrão' },
-                   { value: 'background', label: 'Inverso' },
-                   { value: 'primary', label: 'Destaque' }
-                 ] as const).map(color => (
-                    <button
-                      key={color.value}
-                      onClick={() => setDashboardConfig(p => ({ ...p, sidebarIconColor: color.value as any }))}
-                      className={cn("flex-1 px-1 py-1 rounded-md transition-all text-[9px] capitalize flex items-center justify-center gap-1", dashboardConfig.sidebarIconColor === color.value ? "bg-white/15 text-white font-semibold" : "text-white/50")}
-                    >
-                      {color.label}
-                    </button>
-                 ))}
-               </div>
+              <span className="text-[10px] text-white/70 uppercase mb-1 block px-1">Cores dos Outros Ícones</span>
+              <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
+                {([
+                  { value: 'foreground', label: 'Padrão' },
+                  { value: 'background', label: 'Inverso' },
+                  { value: 'primary', label: 'Destaque' }
+                ] as const).map(color => (
+                  <button
+                    key={color.value}
+                    onClick={() => setDashboardConfig(p => ({ ...p, sidebarIconColor: color.value as any }))}
+                    className={cn("flex-1 px-1 py-1 rounded-md transition-all text-[9px] capitalize flex items-center justify-center gap-1", dashboardConfig.sidebarIconColor === color.value ? "bg-white/15 text-white font-semibold" : "text-white/50")}
+                  >
+                    {color.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="h-px bg-white/10" />
+
+            {/* ── Header & Sidebar Chrome ── */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[10px] text-white/50 uppercase font-semibold px-1">Header & Sidebar</span>
+              <div><div className="flex justify-between text-[10px] text-white/50 mb-0.5 px-1"><span>Opacidade</span><span className="font-mono">{dashboardConfig.chromeOpacity}%</span></div>
+                <input type="range" min={10} max={100} step={5} value={dashboardConfig.chromeOpacity}
+                  onChange={(e) => setDashboardConfig(p => ({ ...p, chromeOpacity: Number(e.target.value) }))}
+                  className="w-full cursor-pointer accent-blue-500 h-1" style={{ appearance: 'auto' }} /></div>
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[10px] text-white/60">Backdrop Blur</span>
+                <button onClick={() => setDashboardConfig(p => ({ ...p, chromeBlur: !p.chromeBlur }))}
+                  className={cn('relative inline-flex h-4 w-7 shrink-0 cursor-pointer items-center rounded-full transition-colors', dashboardConfig.chromeBlur ? 'bg-blue-500' : 'bg-white/20')}>
+                  <span className={cn('pointer-events-none inline-block h-2 w-2 transform rounded-full bg-white ring-0 transition-transform', dashboardConfig.chromeBlur ? 'translate-x-4' : 'translate-x-1')} />
+                </button>
+              </div>
+              {dashboardConfig.chromeBlur && (
+                <div><div className="flex justify-between text-[10px] text-white/50 mb-0.5 px-1"><span>Intensidade</span><span className="font-mono">{dashboardConfig.chromeBlurIntensity}px</span></div>
+                  <input type="range" min={2} max={40} step={1} value={dashboardConfig.chromeBlurIntensity}
+                    onChange={(e) => setDashboardConfig(p => ({ ...p, chromeBlurIntensity: Number(e.target.value) }))}
+                    className="w-full cursor-pointer accent-blue-500 h-1" style={{ appearance: 'auto' }} /></div>
+              )}
             </div>
           </div>
         </Popover>
@@ -652,9 +679,9 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
       {activeMenu === 'authbg' && showFormWidthOption && (
         <Popover title="Auth Background" isWide={settingsMode === 'authbg'}>
           {settingsMode === 'authbg' ? (
-             <div className="h-[350px] pr-1 [&_*]:text-foreground dark:[&_*]:text-foreground bg-background rounded-xl">
-               <AuthBgSettingsPanel onBack={() => setSettingsMode('none')} />
-             </div>
+            <div className="h-[350px] pr-1 [&_*]:text-foreground dark:[&_*]:text-foreground bg-background rounded-xl">
+              <AuthBgSettingsPanel onBack={() => setSettingsMode('none')} />
+            </div>
           ) : (
             <div className="flex flex-col gap-2">
               <div>
@@ -664,7 +691,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                   <span className="truncate">{AUTH_BG_OPTIONS.find(o => o.value === authBg)?.label ?? 'Nenhum'}</span>
                 </button>
               </div>
-              
+
               <ul className="flex flex-col gap-0.5 max-h-48 overflow-y-auto scrollbar-stylized mt-2 border-t border-white/10 pt-2">
                 {AUTH_BG_OPTIONS.map((opt) => (
                   <li
@@ -680,7 +707,7 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
                   </li>
                 ))}
               </ul>
-              
+
               {authBg !== 'none' && (
                 <button
                   onClick={() => setSettingsMode('authbg')}
@@ -742,18 +769,13 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
 
 
       {/* ===================== DOCK BAR (FIGMA STYLE) ===================== */}
-      
-      <div className="h-[46px] bg-[#2c2c2c] dark:bg-[#2c2c2c] rounded-[16px] shadow-[0_12px_40px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.1)] flex items-center p-1.5 gap-1 text-white overflow-visible relative">
-        
-        {/* Cursor/Move (Decorative) */}
-        <div className="w-8 h-8 flex items-center justify-center text-blue-400 hover:bg-white/5 rounded-lg border border-transparent transition-colors">
-           <MousePointer2 size={16} className="fill-blue-400" />
-        </div>
-        
-        <div className="w-px h-5 bg-white/10 mx-0.5" />
 
-        <button 
-          onClick={() => toggleMenu('visual')} 
+      <div className="h-[46px] bg-[#2c2c2c] dark:bg-[#2c2c2c] rounded-[16px] shadow-[0_12px_40px_rgba(0,0,0,0.4),0_0_0_1px_rgba(255,255,255,0.1)] flex items-center p-1.5 gap-1 text-white overflow-visible relative opacity-50 hover:opacity-100 transition-opacity duration-300">
+
+
+
+        <button
+          onClick={() => toggleMenu('visual')}
           className={cn("h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg transition-colors", activeMenu === 'visual' ? "bg-white/20" : "hover:bg-white/10")}
           title="Visual Theme"
         >
@@ -761,8 +783,8 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
           <ChevronDown size={10} className={cn("opacity-40 transition-transform", activeMenu === 'visual' ? "rotate-180 opacity-60" : "")} />
         </button>
 
-        <button 
-          onClick={() => toggleMenu('color')} 
+        <button
+          onClick={() => toggleMenu('color')}
           className={cn("h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg transition-colors", activeMenu === 'color' ? "bg-white/20" : "hover:bg-white/10")}
           title="Accent Color"
         >
@@ -771,8 +793,8 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
           <ChevronDown size={10} className={cn("opacity-40 transition-transform", activeMenu === 'color' ? "rotate-180 opacity-60" : "")} />
         </button>
 
-        <button 
-          onClick={() => toggleMenu('radius')} 
+        <button
+          onClick={() => toggleMenu('radius')}
           className={cn("h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg transition-colors", activeMenu === 'radius' ? "bg-white/20" : "hover:bg-white/10")}
           title="Radius & Shadows"
         >
@@ -783,44 +805,44 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
         {/* Type button removido */}
 
         {showFormWidthOption ? (
-           <>
-            <button 
-              onClick={() => toggleMenu('authbg')} 
+          <>
+            <button
+              onClick={() => toggleMenu('authbg')}
               className={cn("h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg transition-colors", activeMenu === 'authbg' ? "bg-white/20" : "hover:bg-white/10")}
               title="Auth Background"
             >
               <Wand2 size={16} className={cn("opacity-80 transition-transform", activeMenu === 'authbg' && "opacity-100")} />
               <ChevronDown size={10} className={cn("opacity-40 transition-transform", activeMenu === 'authbg' ? "rotate-180 opacity-60" : "")} />
             </button>
-            
-            <button 
-              onClick={() => toggleMenu('form')} 
+
+            <button
+              onClick={() => toggleMenu('form')}
               className={cn("h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg transition-colors", activeMenu === 'form' ? "bg-white/20" : "hover:bg-white/10")}
               title="Form Width & Side"
             >
               {authFormSide === 'left' ? <PanelLeft size={16} className="opacity-80" /> : <PanelRight size={16} className="opacity-80" />}
               <ChevronDown size={10} className={cn("opacity-40 transition-transform", activeMenu === 'form' ? "rotate-180 opacity-60" : "")} />
             </button>
-           </>
+          </>
         ) : (
-           <>
-            <button 
-              onClick={() => toggleMenu('layout')} 
+          <>
+            <button
+              onClick={() => toggleMenu('layout')}
               className={cn("h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg transition-colors", activeMenu === 'layout' ? "bg-white/20" : "hover:bg-white/10")}
-              title="Dashboard Layout"
+              title="Sidebar Config"
             >
               <Settings2 size={16} className={cn("opacity-80 transition-transform", activeMenu === 'layout' && "opacity-100")} />
               <ChevronDown size={10} className={cn("opacity-40 transition-transform", activeMenu === 'layout' ? "rotate-180 opacity-60" : "")} />
             </button>
-            <button 
-              onClick={() => toggleMenu('dashbg')} 
+            <button
+              onClick={() => toggleMenu('dashbg')}
               className={cn("h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg transition-colors", activeMenu === 'dashbg' ? "bg-white/20" : "hover:bg-white/10")}
-              title="Background & Chrome"
+              title="Fundo & Chrome"
             >
               <ImageIcon size={16} className={cn("opacity-80 transition-transform", activeMenu === 'dashbg' && "opacity-100")} />
               <ChevronDown size={10} className={cn("opacity-40 transition-transform", activeMenu === 'dashbg' ? "rotate-180 opacity-60" : "")} />
             </button>
-           </>
+          </>
         )}
 
         <div className="w-px h-5 bg-white/10 mx-0.5" />
@@ -843,8 +865,8 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
         <div className="w-px h-5 bg-white/10 mx-0.5" />
 
         {/* Theme Toggle */}
-        <button 
-          onClick={toggleTheme} 
+        <button
+          onClick={toggleTheme}
           className="h-8 w-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors relative"
           title="Toggle Theme"
         >

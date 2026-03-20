@@ -1,18 +1,18 @@
 import React, { useState, type ElementType } from 'react';
-import { 
-  ChevronDown, 
-  Compass, 
-  ShoppingBag, 
-  Box, 
-  Users, 
-  Store, 
-  Banknote, 
-  BarChart3, 
-  Percent, 
-  Settings, 
-  HelpCircle, 
-  SquareChevronLeft, 
-  SquareChevronRight 
+import {
+  ChevronDown,
+  Compass,
+  ShoppingBag,
+  Box,
+  Users,
+  Store,
+  Banknote,
+  BarChart3,
+  Percent,
+  Settings,
+  HelpCircle,
+  SquareChevronLeft,
+  SquareChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
@@ -28,9 +28,10 @@ interface SidebarItemProps {
   isOpen?: boolean;
   isSubmenu?: boolean;
   collapsed?: boolean;
+  onClick?: () => void;
 }
 
-const SidebarItem = ({ icon: Icon, label, badge, active, hasSubmenu, isOpen, isSubmenu, collapsed }: SidebarItemProps) => {
+const SidebarItem = ({ icon: Icon, label, badge, active, hasSubmenu, isOpen, isSubmenu, collapsed, onClick }: SidebarItemProps) => {
   const { dashboardConfig, theme } = useTheme();
   const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
   const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
@@ -48,6 +49,7 @@ const SidebarItem = ({ icon: Icon, label, badge, active, hasSubmenu, isOpen, isS
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
         active ? activeClass : INACTIVE_SIDEBAR_CLASS,
@@ -98,10 +100,10 @@ export const ShopeersSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}
         collapsed ? "justify-center" : "justify-between"
       )}>
         <div className="flex items-center justify-start min-w-8">
-           <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
+          <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
         </div>
         {!collapsed && (
-          <button 
+          <button
             onClick={() => setCollapsed(true)}
             className="p-1 px-1.5 hover:text-primary transition-all text-muted-foreground shrink-0"
           >
@@ -112,7 +114,7 @@ export const ShopeersSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}
 
       {collapsed && (
         <div className="px-3 mb-4 flex justify-center">
-           <button 
+          <button
             onClick={() => setCollapsed(false)}
             className="text-primary hover:scale-110 transition-all"
           >
@@ -124,37 +126,37 @@ export const ShopeersSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto px-2 scrollbar-hide py-2">
         <div className="space-y-0.5">
-            <SidebarItem icon={Compass} label="Dashboard" active collapsed={collapsed} />
-            <SidebarItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
-            <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
-            <div onClick={() => onNavigate?.('users')}>
-              <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
-            </div>
-            <SidebarItem icon={Store} label="Online Store" collapsed={collapsed} />
+          <SidebarItem icon={Compass} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
+          <SidebarItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
+          <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
+          <div onClick={() => onNavigate?.('users')}>
+            <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
+          </div>
+          <SidebarItem icon={Store} label="Online Store" collapsed={collapsed} />
         </div>
 
         <div className="my-6 border-t border-border mx-3" />
 
         <div onClick={() => !collapsed && setFinancesOpen(!financesOpen)}>
-          <SidebarItem 
-            icon={Banknote} 
-            label="Finances" 
-            hasSubmenu 
-            isOpen={financesOpen} 
+          <SidebarItem
+            icon={Banknote}
+            label="Finances"
+            hasSubmenu
+            isOpen={financesOpen}
             collapsed={collapsed}
           />
         </div>
-        
+
         {financesOpen && !collapsed && (
           <div className="flex flex-col relative mb-4">
-             <SidebarItem icon={() => null} label="Invoices" isSubmenu collapsed={collapsed} />
-             <SidebarItem icon={() => null} label="Transactions" isSubmenu collapsed={collapsed} />
+            <SidebarItem icon={() => null} label="Invoices" isSubmenu collapsed={collapsed} />
+            <SidebarItem icon={() => null} label="Transactions" isSubmenu collapsed={collapsed} />
           </div>
         )}
 
         <div className="space-y-0.5">
-            <SidebarItem icon={BarChart3} label="Analytics" collapsed={collapsed} />
-            <SidebarItem icon={Percent} label="Discounts" collapsed={collapsed} />
+          <SidebarItem icon={BarChart3} label="Analytics" collapsed={collapsed} />
+          <SidebarItem icon={Percent} label="Discounts" collapsed={collapsed} />
         </div>
 
         <div className="mt-8 pt-6 space-y-0.5 border-t border-border mb-4">

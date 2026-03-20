@@ -1,13 +1,18 @@
 import React, { useState, type ElementType } from 'react';
-import { 
-  Plus, 
-  Home, 
-  HardDrive, 
-  Monitor, 
-  Trash2, 
-  Activity,
-  Columns,
-  ChevronDown
+import {
+  Compass,
+  ShoppingBag,
+  Users,
+  Box,
+  Store,
+  Banknote,
+  BarChart3,
+  Percent,
+  Settings,
+  HelpCircle,
+  Plus,
+  ChevronDown,
+  Columns
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
@@ -17,13 +22,15 @@ import type { SidebarNavProps } from '@/types/navigation';
 interface SidebarItemProps {
   icon: ElementType<{ size?: number; className?: string }>;
   label: string;
+  badge?: string | number;
   active?: boolean;
   collapsed?: boolean;
+  onClick?: () => void;
   hasDropdown?: boolean;
   isOpen?: boolean;
 }
 
-const SidebarItem = ({ icon: Icon, label, active, collapsed, hasDropdown, isOpen }: SidebarItemProps) => {
+const SidebarItem = ({ icon: Icon, label, badge, active, collapsed, hasDropdown, isOpen, onClick }: SidebarItemProps) => {
   const { dashboardConfig, theme } = useTheme();
   const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
   const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
@@ -41,6 +48,7 @@ const SidebarItem = ({ icon: Icon, label, active, collapsed, hasDropdown, isOpen
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
         active ? activeClass : INACTIVE_SIDEBAR_CLASS,
@@ -58,9 +66,14 @@ const SidebarItem = ({ icon: Icon, label, active, collapsed, hasDropdown, isOpen
       {!collapsed && (
         <div className="flex items-center justify-between w-full overflow-hidden">
           <span className={cn("font-semibold truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
-          {hasDropdown && (
-            <ChevronDown size={14} className={cn("ml-2 opacity-50 transition-transform text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
-          )}
+          <div className="flex items-center shrink-0">
+            {badge && (
+              <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-semibold ml-2", active ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground")}>{badge}</span>
+            )}
+            {hasDropdown && (
+              <ChevronDown size={14} className={cn("ml-2 opacity-50 transition-transform text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -69,10 +82,10 @@ const SidebarItem = ({ icon: Icon, label, active, collapsed, hasDropdown, isOpen
 
 export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [storageOpen, setStorageOpen] = useState(false);
+  const [financesOpen, setFinancesOpen] = useState(false);
   const { theme } = useTheme();
   const chromeStyle = useChromeStyle();
-  
+
   const logoSrc = theme === 'dark' ? '/logo branca.svg' : '/logo preta.svg';
 
   return (
@@ -85,10 +98,10 @@ export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
         collapsed ? "justify-center" : "justify-between"
       )}>
         <div className="flex items-center justify-start min-w-8">
-           <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
+          <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
         </div>
         {!collapsed && (
-          <button 
+          <button
             onClick={() => setCollapsed(true)}
             className="p-1 text-muted-foreground hover:text-primary transition-colors"
           >
@@ -99,12 +112,12 @@ export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
 
       {collapsed && (
         <div className="px-5 mb-4">
-           <button 
-           onClick={() => setCollapsed(false)}
-           className="w-10 h-10 flex items-center justify-center bg-accent hover:bg-primary hover:text-primary-foreground rounded-lg transition-all shadow-sm group"
-         >
-           <Columns size={18} className="text-primary group-hover:text-primary-foreground" />
-         </button>
+          <button
+            onClick={() => setCollapsed(false)}
+            className="w-10 h-10 flex items-center justify-center bg-accent hover:bg-primary hover:text-primary-foreground rounded-lg transition-all shadow-sm group"
+          >
+            <Columns size={18} className="text-primary group-hover:text-primary-foreground" />
+          </button>
         </div>
       )}
 
@@ -120,24 +133,33 @@ export const ReSyncSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
 
       <nav className="flex-1 overflow-y-auto px-3 scrollbar-hide py-2">
         <div className="space-y-1">
-          <SidebarItem icon={Home} label="Local Hub" active collapsed={collapsed} />
-          
-          <div onClick={() => !collapsed && setStorageOpen(!storageOpen)}>
-            <SidebarItem icon={HardDrive} label="Storage" hasDropdown isOpen={storageOpen} collapsed={collapsed} />
+          <SidebarItem icon={Compass} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
+          <SidebarItem icon={ShoppingBag} label="Orders" active collapsed={collapsed} />
+          <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
+          <div onClick={() => onNavigate?.('users')}>
+            <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
           </div>
-          {storageOpen && !collapsed && (
+          <SidebarItem icon={Store} label="Online Store" collapsed={collapsed} />
+
+          <div className="my-6 border-t border-border mx-2" />
+
+          <div onClick={() => !collapsed && setFinancesOpen(!financesOpen)}>
+            <SidebarItem icon={Banknote} label="Finances" hasDropdown isOpen={financesOpen} collapsed={collapsed} />
+          </div>
+          {financesOpen && !collapsed && (
             <div className="ml-4 pl-4 border-l border-border mb-2 flex flex-col gap-1 mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
-               <SidebarItem icon={() => null} label="Cloud sync" />
-               <SidebarItem icon={() => null} label="External" />
+              <SidebarItem icon={() => null} label="Invoices" />
+              <SidebarItem icon={() => null} label="Transactions" />
             </div>
           )}
 
-          <SidebarItem icon={Monitor} label="Devices" collapsed={collapsed} />
-          <SidebarItem icon={Activity} label="Logs" collapsed={collapsed} />
-          <SidebarItem icon={Trash2} label="Bin" collapsed={collapsed} />
-          <div onClick={() => onNavigate?.('users')}>
-            <SidebarItem icon={Columns} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
-          </div>
+          <SidebarItem icon={BarChart3} label="Analytics" collapsed={collapsed} />
+          <SidebarItem icon={Percent} label="Discounts" collapsed={collapsed} />
+
+          <div className="my-6 border-t border-border mx-2" />
+
+          <SidebarItem icon={Settings} label="Settings" collapsed={collapsed} />
+          <SidebarItem icon={HelpCircle} label="Help & Support" collapsed={collapsed} />
         </div>
       </nav>
     </aside>

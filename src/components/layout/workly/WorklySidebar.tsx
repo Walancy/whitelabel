@@ -1,18 +1,19 @@
 import React, { useState, type ElementType } from 'react';
-import { 
-  Home, 
-  Bell, 
-  CheckSquare, 
-  Settings, 
-  FileText, 
-  Users, 
-  Inbox, 
-  MessageSquare,
+import {
+  Compass,
+  ShoppingBag,
+  Users,
+  Box,
+  Store,
+  Banknote,
+  BarChart3,
+  Percent,
+  Settings,
+  HelpCircle,
   Sparkles,
   ChevronDown,
   ArrowLeft,
-  ArrowRight,
-  FolderOpen
+  ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
@@ -22,13 +23,15 @@ import type { SidebarNavProps } from '@/types/navigation';
 interface NavItemProps {
   icon: ElementType<{ size?: number; className?: string }>;
   label: string;
+  badge?: string | number;
   active?: boolean;
   hasDropdown?: boolean;
   isOpen?: boolean;
   collapsed?: boolean;
+  onClick?: () => void;
 }
 
-const NavItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: NavItemProps) => {
+const NavItem = ({ icon: Icon, label, badge, active, hasDropdown, isOpen, collapsed, onClick }: NavItemProps) => {
   const { dashboardConfig, theme } = useTheme();
   const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
   const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
@@ -46,6 +49,7 @@ const NavItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: 
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
         active
@@ -67,9 +71,14 @@ const NavItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: 
       {!collapsed && (
         <div className="flex items-center justify-between w-full overflow-hidden">
           <span className={cn("font-semibold relative z-10 truncate flex-1 tracking-tight", sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', !active && "text-foreground")}>{label}</span>
-          {hasDropdown && (
-            <ChevronDown size={14} className={cn("ml-2 transition-transform opacity-50 text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
-          )}
+          <div className="flex items-center shrink-0">
+            {badge && (
+              <span className={cn("px-1.5 py-0.5 rounded-full text-[9px] font-semibold ml-2", active ? "bg-primary-foreground text-primary" : "bg-muted text-muted-foreground")}>{badge}</span>
+            )}
+            {hasDropdown && (
+              <ChevronDown size={14} className={cn("ml-2 transition-transform opacity-50 text-inherit", isOpen && "rotate-180", active && "opacity-100")} />
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -79,9 +88,9 @@ const NavItem = ({ icon: Icon, label, active, hasDropdown, isOpen, collapsed }: 
 export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
   const chromeStyle = useChromeStyle();
-  const [projectsOpen, setProjectsOpen] = useState(false);
+  const [financesOpen, setFinancesOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  
+
   const logoSrc = theme === 'dark' ? '/logo branca.svg' : '/logo preta.svg';
 
   return (
@@ -94,10 +103,10 @@ export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
         collapsed ? "justify-center" : "justify-between"
       )}>
         <div className="flex items-center justify-start min-w-8">
-           <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain" />
+          <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain" />
         </div>
         {!collapsed && (
-          <button 
+          <button
             onClick={() => setCollapsed(true)}
             className="workly-surface w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground transition-all"
           >
@@ -107,54 +116,57 @@ export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
       </div>
 
       {collapsed && (
-         <div className="px-2 mb-4">
-           <button 
+        <div className="px-2 mb-4">
+          <button
             onClick={() => setCollapsed(false)}
             className="workly-btn-primary w-full h-10 flex items-center justify-center rounded-full active:scale-95 transition-all group"
           >
             <ArrowRight size={18} className="text-primary-foreground" />
           </button>
-         </div>
+        </div>
       )}
 
       <nav className="flex-1 space-y-0.5 overflow-y-auto scrollbar-hide py-2 px-1">
-        <NavItem icon={Home} label="Home" collapsed={collapsed} />
-        <NavItem icon={Bell} label="Notifications" collapsed={collapsed} />
-        <NavItem icon={CheckSquare} label="Tasks" active collapsed={collapsed} />
-        
-        <div onClick={() => !collapsed && setProjectsOpen(!projectsOpen)}>
-          <NavItem icon={FolderOpen} label="Projects" hasDropdown isOpen={projectsOpen} collapsed={collapsed} />
+        <NavItem icon={Compass} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
+        <NavItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
+        <NavItem icon={Box} label="Products" collapsed={collapsed} />
+        <div onClick={() => onNavigate?.('users')}>
+          <NavItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
         </div>
-        {projectsOpen && !collapsed && (
+        <NavItem icon={Store} label="Online Store" collapsed={collapsed} />
+
+        <div className="my-6 border-t border-border mx-3" />
+
+        <div onClick={() => !collapsed && setFinancesOpen(!financesOpen)}>
+          <NavItem icon={Banknote} label="Finances" hasDropdown isOpen={financesOpen} collapsed={collapsed} />
+        </div>
+        {financesOpen && !collapsed && (
           <div className="ml-4 pl-4 mb-2 flex flex-col gap-1 mt-1 animate-in fade-in slide-in-from-top-1 duration-200">
-            <NavItem icon={() => null} label="Active Work" />
-            <NavItem icon={() => null} label="Roadmap" />
+            <NavItem icon={() => null} label="Invoices" />
+            <NavItem icon={() => null} label="Transactions" />
           </div>
         )}
 
-        <NavItem icon={Settings} label="Settings" collapsed={collapsed} />
+        <NavItem icon={BarChart3} label="Analytics" collapsed={collapsed} />
+        <NavItem icon={Percent} label="Discounts" collapsed={collapsed} />
 
         {!collapsed && (
-           <div className="mt-8 mb-4">
-            <p className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">Core</p>
-            <NavItem icon={FileText} label="Docs" />
-            <div onClick={() => onNavigate?.('users')}>
-              <NavItem icon={Users} label="Usuários" active={activePage === 'users'} />
-            </div>
-            <NavItem icon={Inbox} label="Inbox" />
-            <NavItem icon={MessageSquare} label="Help" />
+          <div className="mt-8 mb-4">
+            <p className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">System</p>
+            <NavItem icon={Settings} label="Settings" />
+            <NavItem icon={HelpCircle} label="Help & Support" />
           </div>
         )}
       </nav>
 
       <div className={cn("mt-auto px-1 pb-4 pt-4", collapsed && "hidden")}>
-         <div className="workly-glass workly-plan-card p-4 rounded-lg relative overflow-hidden group">
-            <Sparkles size={14} className="text-primary mb-2" />
-            <p className="text-[10px] text-muted-foreground leading-relaxed mb-3">Unlock premium.</p>
-            <button className="workly-btn-primary w-full py-2 rounded-lg text-[11px] font-semibold active:scale-95 transition-all">
-              Upgrade Now
-            </button>
-         </div>
+        <div className="workly-glass workly-plan-card p-4 rounded-lg relative overflow-hidden group">
+          <Sparkles size={14} className="text-primary mb-2" />
+          <p className="text-[10px] text-muted-foreground leading-relaxed mb-3">Unlock premium.</p>
+          <button className="workly-btn-primary w-full py-2 rounded-lg text-[11px] font-semibold active:scale-95 transition-all">
+            Upgrade Now
+          </button>
+        </div>
       </div>
 
       <div className={cn(
@@ -163,7 +175,7 @@ export const WorklySidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) 
       )}>
         <div className="flex items-center gap-2.5 overflow-hidden">
           <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center p-0.5 overflow-hidden shrink-0">
-             <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&q=80" alt="Avatar" className="w-full h-full object-cover rounded-sm" />
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&q=80" alt="Avatar" className="w-full h-full object-cover rounded-sm" />
           </div>
           {!collapsed && (
             <div className="flex flex-col overflow-hidden">

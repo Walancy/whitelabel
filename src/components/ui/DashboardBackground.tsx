@@ -26,7 +26,10 @@ const shiftHue = (hsl: string, deg: number) =>
 
 export function DashboardBackground() {
   const { activeAccentColor, authBgConfigs, theme, dashboardConfig } = useTheme();
-  const { bgEffect, bgGradientEnabled, bgGradientColor, bgGradientOpacity, bgGradientSize, bgGradientX, bgGradientY } = dashboardConfig;
+  const {
+    bgEffect, bgGradientEnabled, bgGradientColor, bgGradientOpacity,
+    bgGradientSize, bgGradientX, bgGradientY, bgGradientUseAccent
+  } = dashboardConfig;
 
   const hasBg = bgEffect !== 'none';
   const hasGradient = bgGradientEnabled;
@@ -46,7 +49,9 @@ export function DashboardBackground() {
   const b = (k: string) => Boolean(cfg[k] ?? (defaults as Record<string, boolean>)[k]);
   const bgColor = s('bgColor') && s('bgColor') !== 'auto' ? s('bgColor') : autoBgColor;
 
-  const gradColorHex = bgGradientColor ? hslToHex(bgGradientColor) : '#22c55e';
+  const gradColorHex = bgGradientUseAccent
+    ? hslToHex(activeAccentColor)
+    : (bgGradientColor ? hslToHex(bgGradientColor) : '#22c55e');
   const gradOpacity = bgGradientOpacity / 100;
 
   return (

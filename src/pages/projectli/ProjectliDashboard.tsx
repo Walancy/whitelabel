@@ -80,7 +80,7 @@ const TaskCard = ({ task }: { task: Task }) => {
 
   return (
     <div
-      className={cn('p-4 transition-all group', isDetailed ? 'ring-1 ring-primary/30' : '')}
+      className={cn('border border-border p-4 transition-all group', isDetailed ? 'ring-1 ring-primary/30' : '')}
       style={{ ...cardStyle, borderRadius: 'var(--radius)' }}
     >
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -200,7 +200,7 @@ export const ProjectliDashboard = () => {
         {/* Right: Panels */}
         <div className="flex flex-col gap-3">
           {/* Today Note */}
-          <div className="p-4" style={panel}>
+          <div className="p-4 border border-border" style={panel}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-foreground">Today note</span>
               <button className="w-7 h-7 flex items-center justify-center bg-primary text-primary-foreground hover:brightness-110 transition-all"
@@ -225,7 +225,7 @@ export const ProjectliDashboard = () => {
           </div>
 
           {/* My Files */}
-          <div className="p-4" style={panel}>
+          <div className="p-4 border border-border" style={panel}>
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-semibold text-foreground">My files</span>
               <button className="text-muted-foreground hover:text-foreground transition-colors">
@@ -263,7 +263,7 @@ export const ProjectliDashboard = () => {
           </div>
 
           {/* Activity */}
-          <div className="p-4 flex-1" style={panel}>
+          <div className="p-4 flex-1 border border-border" style={panel}>
             <div className="flex items-center justify-between mb-1">
               <div>
                 <span className="text-xs font-semibold text-foreground">Activity</span>
@@ -303,7 +303,7 @@ export const ProjectliDashboard = () => {
           </div>
 
           {/* Team */}
-          <div className="p-4" style={panel}>
+          <div className="p-4 border border-border" style={panel}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-semibold text-foreground">Team</span>
               <button className="text-[10px] text-primary font-semibold flex items-center gap-0.5 hover:underline">

@@ -6,14 +6,19 @@
 @layer base {
   :root {
     /* Light mode — branco suave (warm off-white) */
-    --background: 40 20% 97%;          /* #f8f7f5 — off-white quente */
-    --foreground: 220 15% 18%;         /* quase preto, mas suave */
-    --card: 40 20% 99%;                /* levemente off-white */
+    --background: 40 20% 97%;
+    /* #f8f7f5 — off-white quente */
+    --foreground: 220 15% 18%;
+    /* quase preto, mas suave */
+    --card: 40 20% 99%;
+    /* levemente off-white */
     --card-foreground: 220 15% 18%;
     --popover: 40 20% 99%;
     --popover-foreground: 220 15% 18%;
-    --primary: 220 15% 18%;            /* preto suave para light */
-    --primary-foreground: 40 20% 97%;  /* off-white como foreground de primary */
+    --primary: 220 15% 18%;
+    /* preto suave para light */
+    --primary-foreground: 40 20% 97%;
+    /* off-white como foreground de primary */
     --secondary: 220 10% 93%;
     --secondary-foreground: 220 15% 18%;
     --muted: 220 10% 93%;
@@ -29,15 +34,19 @@
   }
 
   .dark {
-    /* Dark mode — preto suave (deep slate, não #000) */
-    --background: 222 16% 10%;         /* #141820 — slate escuro */
-    --foreground: 210 14% 90%;         /* off-white frio — não #fff */
-    --card: 222 16% 13%;               /* ligeiramente mais claro que bg */
+    /* Dark mode — preto profundo e neutro (ajustado para ser menos azulado) */
+    --background: 222 12% 4.5%;
+    /* #0a0c10 - preto profundo com sutil toque frio */
+    --foreground: 210 14% 90%;
+    /* off-white frio */
+    --card: 222 10% 7.5%;
+    /* ligeiramente mais claro que bg */
     --card-foreground: 210 14% 90%;
-    --popover: 222 16% 11%;
+    --popover: 222 10% 6.5%;
     --popover-foreground: 210 14% 90%;
-    --primary: 210 14% 90%;            /* off-white como primary no dark */
-    --primary-foreground: 222 16% 10%;
+    --primary: 210 14% 90%;
+    /* off-white como primary no dark */
+    --primary-foreground: 222 12% 4.5%;
     --secondary: 222 14% 16%;
     --secondary-foreground: 210 14% 90%;
     --muted: 222 14% 16%;
@@ -57,6 +66,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -64,8 +74,10 @@
 }
 
 /* Custom global rules */
-input, button {
-  height: 2.5rem; /* Standardizing sizes */
+input,
+button {
+  height: 2.5rem;
+  /* Standardizing sizes */
 }
 
 /* Botões dentro do thead não devem herdar a altura padrão */
@@ -84,7 +96,8 @@ input:-webkit-autofill:active {
   -webkit-text-fill-color: hsl(var(--foreground)) !important;
   caret-color: hsl(var(--foreground));
   transition: background-color 99999s ease-in-out 99999s, color 99999s ease-in-out 99999s;
-  box-shadow: inset 0 0 0 9999px hsl(var(--muted)) !important; /* usa muted (neutro) em vez de accent */
+  box-shadow: inset 0 0 0 9999px hsl(var(--muted)) !important;
+  /* usa muted (neutro) em vez de accent */
 }
 
 .short-gap {
@@ -107,8 +120,10 @@ input:-webkit-autofill:active {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 /* Stylized scrollbar as per global rules */
@@ -133,25 +148,26 @@ input:-webkit-autofill:active {
 [data-pattern="workly"] {
   --workly-surface: 240 5% 18%;
 }
+
 [data-pattern="workly"]:not(.dark) {
   --workly-surface: 240 4.8% 92%;
 }
+
 [data-pattern="workly"].dark {
-  --background: 240 6% 10%;
-  --card: 240 6% 12%;
-  --border: 240 5% 20%;
-  --input: 240 5% 16%;
+  --background: 222 10% 6%;
+  --card: 222 10% 8%;
+  --border: 222 8% 15%;
+  --input: 222 8% 12%;
 }
+
 [data-pattern="workly"] .workly-neon-active {
   /* Luz saindo da borda direita: mais forte na origem, mais fraco no final */
   background:
-    linear-gradient(
-      to left,
+    linear-gradient(to left,
       hsl(var(--primary) / 0.72) 0%,
       hsl(var(--primary) / 0.28) 15%,
       hsl(var(--primary) / 0.06) 40%,
-      hsl(var(--input)) 100%
-    );
+      hsl(var(--input)) 100%);
   border-radius: var(--radius);
   border-top: 1px solid hsl(0 0% 100% / 0.04);
   border-bottom: 1px solid hsl(0 0% 100% / 0.04);
@@ -160,27 +176,34 @@ input:-webkit-autofill:active {
   box-shadow: 2px 0 14px 2px hsl(var(--primary) / 0.4);
   color: hsl(var(--primary-foreground));
 }
+
 [data-pattern="workly"]:not(.dark) .workly-neon-active {
   border-top: 1px solid hsl(0 0% 0% / 0.06);
   border-bottom: 1px solid hsl(0 0% 0% / 0.06);
   color: hsl(var(--foreground));
 }
+
 [data-pattern="workly"]:not(.dark) .workly-neon-active * {
   color: inherit;
 }
+
 [data-pattern="workly"] .workly-neon-active * {
   color: inherit;
 }
+
 [data-pattern="workly"] .workly-glass {
   background: hsl(var(--card) / 0.85);
   backdrop-filter: blur(8px);
 }
+
 [data-pattern="workly"] .workly-plan-card {
   background: hsla(0, 0%, 100%, 0.048);
 }
+
 [data-pattern="workly"]:not(.dark) .workly-plan-card {
   background: hsl(240 5% 96%);
 }
+
 /* Mesmo efeito do botão da sidebar (luz das bordas), intensidade menor; degrade da esquerda e da direita */
 [data-pattern="workly"] .workly-btn-primary {
   background:
@@ -193,25 +216,31 @@ input:-webkit-autofill:active {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+
 [data-pattern="workly"]:not(.dark) .workly-btn-primary {
   border: 1px solid hsl(0 0% 0% / 0.08);
   color: hsl(var(--foreground));
 }
+
 [data-pattern="workly"]:not(.dark) .workly-btn-primary * {
   color: inherit;
 }
+
 [data-pattern="workly"] .workly-btn-primary * {
   color: inherit;
 }
+
 [data-pattern="workly"] .workly-btn-primary:hover {
   background:
     linear-gradient(to left, hsl(var(--primary) / 0.5) 0%, hsl(var(--primary) / 0.22) 15%, hsl(var(--primary) / 0.05) 40%, transparent 100%),
     linear-gradient(to right, hsl(var(--primary) / 0.5) 0%, hsl(var(--primary) / 0.22) 15%, hsl(var(--primary) / 0.05) 40%, transparent 100%),
     hsl(var(--input));
 }
+
 [data-pattern="workly"] .workly-surface {
   background: hsl(var(--workly-surface));
 }
+
 [data-pattern="workly"] .workly-surface:hover {
   background: hsl(var(--workly-surface) / 0.9);
 }
@@ -219,13 +248,11 @@ input:-webkit-autofill:active {
 /* Estilo neon reutilizável para o activeStyle 'workly-neon' em qualquer layout */
 .sidebar-neon-active {
   background:
-    linear-gradient(
-      to left,
+    linear-gradient(to left,
       hsl(var(--primary) / 0.72) 0%,
       hsl(var(--primary) / 0.28) 15%,
       hsl(var(--primary) / 0.06) 40%,
-      hsl(var(--input)) 100%
-    );
+      hsl(var(--input)) 100%);
   border-radius: var(--radius);
   border-top: 1px solid hsl(0 0% 100% / 0.04);
   border-bottom: 1px solid hsl(0 0% 100% / 0.04);
@@ -233,6 +260,7 @@ input:-webkit-autofill:active {
   border-left: none;
   box-shadow: 2px 0 14px 2px hsl(var(--primary) / 0.4);
 }
+
 .light .sidebar-neon-active {
   border-top: 1px solid hsl(0 0% 0% / 0.06);
   border-bottom: 1px solid hsl(0 0% 0% / 0.06);

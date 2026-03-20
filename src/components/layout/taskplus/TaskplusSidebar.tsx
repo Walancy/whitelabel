@@ -1,10 +1,15 @@
 import React, { useState, type ElementType } from 'react';
-import { 
-  Zap, 
-  Grid, 
-  Bell, 
-  Layout as LayoutIcon, 
-  User,
+import {
+  Compass,
+  ShoppingBag,
+  Users,
+  Box,
+  Store,
+  Banknote,
+  BarChart3,
+  Percent,
+  Settings,
+  HelpCircle,
   ChevronDown,
   Rows
 } from 'lucide-react';
@@ -21,9 +26,10 @@ interface SidebarItemProps {
   hasDropdown?: boolean;
   isOpen?: boolean;
   collapsed?: boolean;
+  onClick?: () => void;
 }
 
-const SidebarItem = ({ icon: Icon, label, badge, active, hasDropdown, isOpen, collapsed }: SidebarItemProps) => {
+const SidebarItem = ({ icon: Icon, label, badge, active, hasDropdown, isOpen, collapsed, onClick }: SidebarItemProps) => {
   const { dashboardConfig, theme } = useTheme();
   const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
   const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
@@ -41,6 +47,7 @@ const SidebarItem = ({ icon: Icon, label, badge, active, hasDropdown, isOpen, co
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
         active ? activeClass : INACTIVE_SIDEBAR_CLASS,
@@ -75,9 +82,9 @@ const SidebarItem = ({ icon: Icon, label, badge, active, hasDropdown, isOpen, co
 export const TaskplusSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
   const chromeStyle = useChromeStyle();
-  const [boardsOpen, setBoardsOpen] = useState(false);
+  const [financesOpen, setFinancesOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  
+
   const logoSrc = theme === 'dark' ? '/logo branca.svg' : '/logo preta.svg';
 
   return (
@@ -89,48 +96,60 @@ export const TaskplusSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}
         "flex items-center h-16 px-6 border-b border-border shrink-0 mb-6 transition-all duration-300",
         collapsed ? "justify-center" : "justify-between"
       )}>
-         <div className="flex items-center justify-start min-w-8 overflow-hidden">
-            <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
-         </div>
-         {!collapsed && (
-            <button 
-              onClick={() => setCollapsed(true)}
-              className="p-1 px-1.5 hover:bg-accent rounded-lg transition-colors text-muted-foreground"
-            >
-              <Rows size={18} />
-            </button>
-         )}
+        <div className="flex items-center justify-start min-w-8 overflow-hidden">
+          <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
+        </div>
+        {!collapsed && (
+          <button
+            onClick={() => setCollapsed(true)}
+            className="p-1 px-1.5 hover:bg-accent rounded-lg transition-colors text-muted-foreground"
+          >
+            <Rows size={18} />
+          </button>
+        )}
       </div>
 
       {collapsed && (
         <div className="px-5 mb-4">
-           <button 
-           onClick={() => setCollapsed(false)}
-           className="w-10 h-10 flex items-center justify-center bg-accent hover:bg-primary hover:text-primary-foreground rounded-lg transition-all shadow-sm group"
-         >
-           <Rows size={18} className="rotate-90 text-primary group-hover:text-primary-foreground" />
-         </button>
+          <button
+            onClick={() => setCollapsed(false)}
+            className="w-10 h-10 flex items-center justify-center bg-accent hover:bg-primary hover:text-primary-foreground rounded-lg transition-all shadow-sm group"
+          >
+            <Rows size={18} className="rotate-90 text-primary group-hover:text-primary-foreground" />
+          </button>
         </div>
       )}
 
       <nav className="flex-1 overflow-y-auto px-4 scrollbar-hide py-2">
         <div className="space-y-1">
-          <SidebarItem icon={Zap} label="Overview" active collapsed={collapsed} />
-          
-          <div onClick={() => !collapsed && setBoardsOpen(!boardsOpen)}>
-            <SidebarItem icon={Grid} label="Boards" hasDropdown isOpen={boardsOpen} collapsed={collapsed} />
+          <SidebarItem icon={Compass} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
+          <SidebarItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
+          <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
+          <div onClick={() => onNavigate?.('users')}>
+            <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
           </div>
-          {boardsOpen && !collapsed && (
+          <SidebarItem icon={Store} label="Online Store" collapsed={collapsed} />
+
+          <div className="my-6 border-t border-border mx-2" />
+
+          <div onClick={() => !collapsed && setFinancesOpen(!financesOpen)}>
+            <SidebarItem icon={Banknote} label="Finances" hasDropdown isOpen={financesOpen} collapsed={collapsed} />
+          </div>
+          {financesOpen && !collapsed && (
             <div className="ml-4 flex flex-col gap-0.5 mb-2 mt-1 animate-in slide-in-from-top-1 duration-200">
-               <SidebarItem icon={() => null} label="Design Team" />
-               <SidebarItem icon={() => null} label="Marketing" />
+              <SidebarItem icon={() => null} label="Invoices" />
+              <SidebarItem icon={() => null} label="Transactions" />
             </div>
           )}
 
-          <SidebarItem icon={Bell} label="Activities" badge="8" collapsed={collapsed} />
-          <SidebarItem icon={LayoutIcon} label="Templates" collapsed={collapsed} />
-          <div onClick={() => onNavigate?.('users')}>
-            <SidebarItem icon={User} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
+          <SidebarItem icon={BarChart3} label="Analytics" collapsed={collapsed} />
+          <SidebarItem icon={Percent} label="Discounts" collapsed={collapsed} />
+
+          <div className="my-6 border-t border-border mx-2" />
+
+          <div className="space-y-1">
+            <SidebarItem icon={Settings} label="Settings" collapsed={collapsed} />
+            <SidebarItem icon={HelpCircle} label="Help & Support" collapsed={collapsed} />
           </div>
         </div>
       </nav>

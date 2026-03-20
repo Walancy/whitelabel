@@ -107,7 +107,7 @@ export const ShopeersDashboard = () => {
         <div className="shrink-0">
           <div className="flex items-center justify-between">
             <h1 className="text-base font-semibold text-foreground tracking-tight">My Campaigns</h1>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs font-medium text-foreground cursor-pointer hover:bg-accent transition-colors">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 border border-border text-xs font-medium text-foreground cursor-pointer hover:bg-accent transition-colors" style={{ borderRadius: 'var(--radius)' }}>
               Finance <ChevronDown size={12} />
             </div>
           </div>
@@ -117,7 +117,7 @@ export const ShopeersDashboard = () => {
         </div>
 
         {/* Overview Card */}
-        <div className="flex-1 flex flex-col rounded-2xl border border-border p-4 min-h-0" style={cardStyle}>
+        <div className="flex-1 flex flex-col border border-border p-4 min-h-0" style={{ ...cardStyle, borderRadius: 'var(--radius)' }}>
           {/* Overview header */}
           <div className="flex items-center justify-between shrink-0 mb-3">
             <span className="text-xs font-semibold text-foreground">Overview</span>
@@ -137,10 +137,10 @@ export const ShopeersDashboard = () => {
           </div>
 
           {/* Time tabs */}
-          <div className="flex bg-muted/30 rounded-xl p-0.5 mb-3 shrink-0">
+          <div className="flex bg-muted/30 p-0.5 mb-3 shrink-0" style={{ borderRadius: 'var(--radius)' }}>
             {(['24h', 'Week', 'Month'] as TimeRange[]).map(t => (
               <button key={t} onClick={() => setTimeRange(t)}
-                className={cn('flex-1 text-[10px] py-1.5 rounded-lg font-semibold transition-all',
+                className={cn('flex-1 text-[10px] py-1.5 font-semibold transition-all',
                   timeRange === t ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground')}>
                 {t}
               </button>
@@ -174,7 +174,7 @@ export const ShopeersDashboard = () => {
         </div>
 
         {/* Top Campaigns Card */}
-        <div className="rounded-2xl border border-border p-4 shrink-0" style={cardStyle}>
+        <div className="border border-border p-4 shrink-0" style={{ ...cardStyle, borderRadius: 'var(--radius)' }}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-foreground">My Top Campaigns</span>
             <div className="flex items-center gap-1.5">
@@ -192,7 +192,7 @@ export const ShopeersDashboard = () => {
               { name: 'Pela Design', followers: '3,074', growth: '9.23' },
               { name: 'Elixir Ads', followers: '2,931', growth: '7.59' },
             ].map(c => (
-              <div key={c.name} className="flex-1 rounded-xl border border-border p-2.5" style={{ backgroundColor: 'hsl(var(--background) / 0.4)' }}>
+              <div key={c.name} className="flex-1 border border-border p-2.5" style={{ backgroundColor: 'hsl(var(--background) / 0.4)', borderRadius: 'var(--radius)' }}>
                 <div className="flex items-start justify-between mb-1.5">
                   <div className="w-2 h-2 rounded-full bg-primary mt-0.5" />
                   <button className="text-muted-foreground hover:text-foreground"><MoreHorizontal size={11} /></button>
@@ -216,7 +216,7 @@ export const ShopeersDashboard = () => {
         <div className="shrink-0">
           <div className="flex items-center justify-between">
             <h1 className="text-base font-semibold text-foreground tracking-tight">Total Balance</h1>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border text-xs font-medium text-foreground cursor-pointer hover:bg-accent transition-colors">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 border border-border text-xs font-medium text-foreground cursor-pointer hover:bg-accent transition-colors" style={{ borderRadius: 'var(--radius)' }}>
               US Dollar <ChevronDown size={12} />
             </div>
           </div>
@@ -226,7 +226,7 @@ export const ShopeersDashboard = () => {
         </div>
 
         {/* Balance Card */}
-        <div className="rounded-2xl border border-border p-4 shrink-0" style={cardStyle}>
+        <div className="border border-border p-4 shrink-0" style={{ ...cardStyle, borderRadius: 'var(--radius)' }}>
           {/* Amount row */}
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-1.5">
@@ -252,7 +252,7 @@ export const ShopeersDashboard = () => {
           </div>
 
           {/* AI Assistant visual */}
-          <div className="mt-3 rounded-xl overflow-hidden relative" style={{ height: '120px', background: 'linear-gradient(135deg, hsl(var(--primary)/0.08), hsl(var(--background)))' }}>
+          <div className="mt-3 overflow-hidden relative" style={{ height: '120px', background: 'linear-gradient(135deg, hsl(var(--primary)/0.08), hsl(var(--background)))', borderRadius: 'var(--radius)' }}>
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
@@ -266,7 +266,7 @@ export const ShopeersDashboard = () => {
         </div>
 
         {/* Popular Campaigns Table Card */}
-        <div className="flex-1 flex flex-col rounded-2xl border border-border overflow-hidden min-h-0" style={cardStyle}>
+        <div className="flex-1 flex flex-col border border-border overflow-hidden min-h-0" style={{ ...cardStyle, borderRadius: 'var(--radius)' }}>
           <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
             <span className="text-xs font-semibold text-foreground">Popular Campaigns</span>
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border text-[10px] font-medium text-muted-foreground cursor-pointer hover:bg-accent transition-colors">
@@ -309,7 +309,7 @@ export const ShopeersDashboard = () => {
                     <td className="px-3 py-3">
                       <button onClick={() => toggle(c.rank)}
                         className={cn(
-                          'text-[11px] font-semibold px-4 py-1.5 rounded-xl transition-all border',
+                          'text-[11px] font-semibold px-4 py-1.5 transition-all border',
                           joined.has(c.rank)
                             ? 'bg-primary/10 text-primary border-primary/30'
                             : c.action === 'Request'
@@ -331,7 +331,7 @@ export const ShopeersDashboard = () => {
       <div className="flex flex-col gap-3 w-[240px] shrink-0 min-h-0">
 
         {/* Ads Card */}
-        <div className="rounded-2xl border border-border p-4 shrink-0" style={cardStyle}>
+        <div className="border border-border p-4 shrink-0" style={{ ...cardStyle, borderRadius: 'var(--radius)' }}>
           <div className="flex items-start justify-between mb-3">
             <div>
               <p className="text-[11px] font-semibold text-foreground">Ads</p>
@@ -339,14 +339,14 @@ export const ShopeersDashboard = () => {
             </div>
             <button className="text-[11px] text-foreground font-semibold hover:text-primary transition-colors">Next →</button>
           </div>
-          <button className="w-full rounded-xl text-[11px] font-semibold transition-all py-2" style={{ backgroundColor: 'hsl(var(--foreground) / 0.08)', color: 'hsl(var(--foreground))' }}>
+          <button className="w-full text-[11px] font-semibold transition-all py-2" style={{ backgroundColor: 'hsl(var(--foreground) / 0.08)', color: 'hsl(var(--foreground))', borderRadius: 'var(--radius)' }}>
             Just for today!
           </button>
         </div>
 
         {/* Premium Card */}
-        <div className="flex-1 rounded-2xl border border-border p-4 flex flex-col relative overflow-hidden" style={cardStyle}>
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none rounded-2xl" />
+        <div className="flex-1 border border-border p-4 flex flex-col relative overflow-hidden" style={{ ...cardStyle, borderRadius: 'var(--radius)' }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-transparent pointer-events-none" style={{ borderRadius: 'var(--radius)' }} />
 
           <div className="relative z-10 flex-1 flex flex-col">
             {/* Title row */}
@@ -372,7 +372,7 @@ export const ShopeersDashboard = () => {
           {/* Bottom row */}
           <div className="relative z-10 mt-4 pt-3 border-t border-border flex items-center justify-between">
             <button className="text-[10px] text-muted-foreground hover:text-foreground transition-colors">Don't show again</button>
-            <button className="px-4 py-1.5 rounded-xl text-[11px] font-semibold transition-all"
+            <button className="px-4 py-1.5 text-[11px] font-semibold transition-all"
               style={{ backgroundColor: 'hsl(var(--foreground))', color: 'hsl(var(--background))' }}>
               Get started
             </button>

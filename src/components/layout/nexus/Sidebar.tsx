@@ -2,19 +2,21 @@ import React, { useState } from 'react';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
 import { type AppPage } from '@/App';
 import { getActiveSidebarClass, INACTIVE_SIDEBAR_CLASS } from '@/lib/sidebar-utils';
-import { 
-  PanelLeftClose, 
-  PanelLeft, 
-  LayoutDashboard, 
-  CreditCard, 
-  Users, 
-  MessageSquare, 
-  Package, 
-  FileText, 
-  BarChart3, 
-  Zap, 
-  ChevronDown,
-  Sparkles
+import {
+  PanelLeftClose,
+  PanelLeft,
+  Compass,
+  ShoppingBag,
+  Users,
+  Box,
+  Store,
+  Banknote,
+  BarChart3,
+  Percent,
+  Settings,
+  HelpCircle,
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -75,8 +77,8 @@ const SidebarItem = ({ icon: Icon, label, badge, active, collapsed, tag, hasSubm
       {!collapsed && (
         <div className="flex items-center justify-between w-full overflow-hidden">
           <span className={cn(
-            "font-semibold truncate flex-1 tracking-tight", 
-            dashboardConfig.sidebarBtnSize > 48 ? 'text-sm' : 'text-xs', 
+            "font-semibold truncate flex-1 tracking-tight",
+            dashboardConfig.sidebarBtnSize > 48 ? 'text-sm' : 'text-xs',
             !active && "text-foreground"
           )}>
             {label}
@@ -112,7 +114,7 @@ const SidebarSection = ({ title, children, collapsed }: { title: string; childre
 
 export const Sidebar = ({ activePage = 'dashboard', onNavigate }: { activePage?: AppPage; onNavigate?: (p: AppPage) => void }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [customersOpen, setCustomersOpen] = useState(false);
+  const [financesOpen, setFinancesOpen] = useState(false);
   const { theme } = useTheme();
   const chromeStyle = useChromeStyle();
 
@@ -132,9 +134,9 @@ export const Sidebar = ({ activePage = 'dashboard', onNavigate }: { activePage?:
         collapsed ? "justify-center" : "justify-start"
       )}>
         <div className="flex items-center justify-start min-w-8 overflow-hidden">
-           <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
+          <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
         </div>
-        <button 
+        <button
           onClick={() => setCollapsed(!collapsed)}
           className="p-1.5 border border-border rounded-lg hover:bg-accent transition-all absolute -right-3.5 top-8 -translate-y-1/2 bg-background z-[60] shadow-sm text-muted-foreground hover:text-foreground flex items-center justify-center animate-in fade-in duration-500"
         >
@@ -145,28 +147,30 @@ export const Sidebar = ({ activePage = 'dashboard', onNavigate }: { activePage?:
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto py-4 scrollbar-hide px-1">
         <SidebarSection title="General" collapsed={collapsed}>
-          <SidebarItem icon={LayoutDashboard} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
-          <SidebarItem icon={CreditCard} label="Payments" active={activePage === 'payments'} collapsed={collapsed} onClick={() => onNavigate?.('payments')} />
-          
-          <div onClick={() => !collapsed && setCustomersOpen(!customersOpen)}>
-            <SidebarItem icon={Users} label="Customers" hasSubmenu isOpen={customersOpen} collapsed={collapsed} />
-          </div>
-          {customersOpen && !collapsed && (
-            <div className="flex flex-col mb-1 gap-1">
-              <SidebarItem icon={() => null} label="List View" isSubmenu collapsed={collapsed} />
-              <SidebarItem icon={() => null} label="Groups" isSubmenu collapsed={collapsed} />
-            </div>
-          )}
-
-          <SidebarItem icon={MessageSquare} label="Messages" badge="3" collapsed={collapsed} />
+          <SidebarItem icon={Compass} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
+          <SidebarItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
+          <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
           <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} onClick={() => onNavigate?.('users')} />
+          <SidebarItem icon={Store} label="Online Store" collapsed={collapsed} />
         </SidebarSection>
 
-        <SidebarSection title="Tools" collapsed={collapsed}>
-          <SidebarItem icon={Package} label="Products" collapsed={collapsed} />
-          <SidebarItem icon={FileText} label="Invoices" collapsed={collapsed} />
+        <SidebarSection title="Finances" collapsed={collapsed}>
+          <div onClick={() => !collapsed && setFinancesOpen(!financesOpen)}>
+            <SidebarItem icon={Banknote} label="Finances" hasSubmenu isOpen={financesOpen} collapsed={collapsed} />
+          </div>
+          {financesOpen && !collapsed && (
+            <div className="flex flex-col mb-1 gap-1">
+              <SidebarItem icon={() => null} label="Invoices" isSubmenu collapsed={collapsed} />
+              <SidebarItem icon={() => null} label="Transactions" isSubmenu collapsed={collapsed} />
+            </div>
+          )}
           <SidebarItem icon={BarChart3} label="Analytics" collapsed={collapsed} />
-          <SidebarItem icon={Zap} label="Workflows" tag="BETA" collapsed={collapsed} />
+          <SidebarItem icon={Percent} label="Discounts" collapsed={collapsed} />
+        </SidebarSection>
+
+        <SidebarSection title="System" collapsed={collapsed}>
+          <SidebarItem icon={Settings} label="Settings" collapsed={collapsed} />
+          <SidebarItem icon={HelpCircle} label="Help & Support" collapsed={collapsed} />
         </SidebarSection>
       </div>
 
@@ -176,14 +180,14 @@ export const Sidebar = ({ activePage = 'dashboard', onNavigate }: { activePage?:
           <div className="p-3.5 relative overflow-hidden rounded-xl border border-border/60 bg-gradient-to-br from-card/80 to-background shadow-sm hover:border-border transition-all group">
             <div className="absolute -right-8 -top-8 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all pointer-events-none" />
             <div className="flex items-center gap-2 mb-2 relative z-10">
-               <Sparkles size={16} className="text-foreground shrink-0 fill-foreground/20" />
-               <span className="text-[13px] font-semibold tracking-tight text-foreground truncate">Boost with AI</span>
+              <Sparkles size={16} className="text-foreground shrink-0 fill-foreground/20" />
+              <span className="text-[13px] font-semibold tracking-tight text-foreground truncate">Boost with AI</span>
             </div>
             <p className="text-[11px] text-muted-foreground leading-[1.4] mb-4 relative z-10">
               AI-powered replies, tag insights, and tools that save hours.
             </p>
             <button className="w-full bg-primary text-primary-foreground rounded-lg text-xs font-bold transition-all hover:brightness-110 active:scale-[0.98] py-2 relative z-10 shadow-[0_0_12px_rgba(var(--primary),0.3)] hover:shadow-[0_0_16px_rgba(var(--primary),0.4)]">
-               Upgrade to Pro
+              Upgrade to Pro
             </button>
           </div>
         ) : (

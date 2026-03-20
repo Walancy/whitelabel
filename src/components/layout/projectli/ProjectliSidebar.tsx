@@ -1,14 +1,15 @@
 import React, { type ElementType } from 'react';
-import { 
-  CheckCircle2, 
-  Zap, 
-  Home, 
-  Folder, 
-  MessageSquare, 
-  Users, 
-  Calendar, 
-  Settings, 
-  AlertCircle,
+import {
+  Compass,
+  ShoppingBag,
+  Users,
+  Box,
+  Store,
+  Banknote,
+  BarChart3,
+  Percent,
+  Settings,
+  HelpCircle,
   ChevronDown,
   ArrowLeftToLine,
   ArrowRightToLine
@@ -28,9 +29,10 @@ interface SidebarItemProps {
   isSubmenu?: boolean;
   active?: boolean;
   collapsed?: boolean;
+  onClick?: () => void;
 }
 
-const SidebarItem = ({ icon: Icon, label, badge, hasSubmenu, isOpen, isSubmenu, active, collapsed }: SidebarItemProps) => {
+const SidebarItem = ({ icon: Icon, label, badge, hasSubmenu, isOpen, isSubmenu, active, collapsed, onClick }: SidebarItemProps) => {
   const { dashboardConfig, theme } = useTheme();
   const { sidebarActiveStyle, sidebarActiveTextColor, sidebarBtnSize, sidebarBtnGap, sidebarIconColor, sidebarBorderOpacity } = dashboardConfig;
   const activeClass = getActiveSidebarClass(sidebarActiveStyle, sidebarActiveTextColor);
@@ -48,6 +50,7 @@ const SidebarItem = ({ icon: Icon, label, badge, hasSubmenu, isOpen, isSubmenu, 
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         'flex items-center rounded-[var(--radius)] cursor-pointer transition-all relative group mb-0.5',
         active ? activeClass : INACTIVE_SIDEBAR_CLASS,
@@ -83,7 +86,7 @@ const SidebarItem = ({ icon: Icon, label, badge, hasSubmenu, isOpen, isSubmenu, 
 export const ProjectliSidebar = ({ activePage, onNavigate }: SidebarNavProps = {}) => {
   const { theme } = useTheme();
   const chromeStyle = useChromeStyle();
-  const [projectsOpen, setProjectsOpen] = useState(false);
+  const [financesOpen, setFinancesOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
   const logoSrc = theme === 'dark' ? '/logo branca.svg' : '/logo preta.svg';
@@ -99,10 +102,10 @@ export const ProjectliSidebar = ({ activePage, onNavigate }: SidebarNavProps = {
         collapsed ? "justify-center" : "justify-between"
       )}>
         <div className="flex items-center justify-start min-w-8">
-           <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
+          <img src={logoSrc} alt="Logo" className="h-6 w-auto object-contain shrink-0" />
         </div>
         {!collapsed && (
-          <button 
+          <button
             onClick={() => setCollapsed(true)}
             className="p-1 px-1.5 hover:bg-accent rounded-lg transition-colors text-muted-foreground ml-auto bg-card border border-border"
           >
@@ -113,7 +116,7 @@ export const ProjectliSidebar = ({ activePage, onNavigate }: SidebarNavProps = {
 
       {collapsed && (
         <div className="p-4 flex justify-center border-b border-border mb-2">
-          <button 
+          <button
             onClick={() => setCollapsed(false)}
             className="p-2 bg-accent hover:bg-primary hover:text-primary-foreground rounded-lg transition-all shadow-sm group"
           >
@@ -125,30 +128,30 @@ export const ProjectliSidebar = ({ activePage, onNavigate }: SidebarNavProps = {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto px-4 scrollbar-hide py-2">
         <div className={cn("space-y-0.5 mb-8", !collapsed && "px-2")}>
-          <SidebarItem icon={CheckCircle2} label="My Tasks" badge="2" active collapsed={collapsed} />
-          <SidebarItem icon={Zap} label="Activities" collapsed={collapsed} />
+          <SidebarItem icon={Compass} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
+          <SidebarItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
+          <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
+          <div onClick={() => onNavigate?.('users')}>
+            <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
+          </div>
+          <SidebarItem icon={Store} label="Online Store" collapsed={collapsed} />
         </div>
 
         <div className="mb-4">
-          {!collapsed && <h3 className="px-5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">Core</h3>}
+          {!collapsed && <h3 className="px-5 text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-4">Finances</h3>}
           <div className="space-y-0.5">
-            <SidebarItem icon={Home} label="Overview" collapsed={collapsed} />
-            
-            <div onClick={() => !collapsed && setProjectsOpen(!projectsOpen)}>
-              <SidebarItem icon={Folder} label="Projects" hasSubmenu isOpen={projectsOpen} collapsed={collapsed} />
+            <div onClick={() => !collapsed && setFinancesOpen(!financesOpen)}>
+              <SidebarItem icon={Banknote} label="Finances" hasSubmenu isOpen={financesOpen} collapsed={collapsed} />
             </div>
-            {projectsOpen && !collapsed && (
+            {financesOpen && !collapsed && (
               <div className="flex flex-col relative w-full mb-1 ml-2 pl-2 border-l border-border mt-1 gap-1">
-                <SidebarItem icon={() => null} label="Active" isSubmenu collapsed={collapsed} />
-                <SidebarItem icon={() => null} label="Archived" isSubmenu collapsed={collapsed} />
+                <SidebarItem icon={() => null} label="Invoices" isSubmenu collapsed={collapsed} />
+                <SidebarItem icon={() => null} label="Transactions" isSubmenu collapsed={collapsed} />
               </div>
             )}
 
-            <SidebarItem icon={MessageSquare} label="Messages" collapsed={collapsed} />
-            <div onClick={() => onNavigate?.('users')}>
-              <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} />
-            </div>
-            <SidebarItem icon={Calendar} label="Calendar" collapsed={collapsed} />
+            <SidebarItem icon={BarChart3} label="Analytics" collapsed={collapsed} />
+            <SidebarItem icon={Percent} label="Discounts" collapsed={collapsed} />
           </div>
         </div>
       </div>
@@ -161,12 +164,12 @@ export const ProjectliSidebar = ({ activePage, onNavigate }: SidebarNavProps = {
           "w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground py-2.5 rounded-lg text-xs font-semibold shadow-md active:scale-[0.98] transition-all",
           collapsed && "w-10 h-10 px-0"
         )}>
-           {!collapsed && <span className="text-primary-foreground">New Project</span>}
-           {collapsed && <span className="text-primary-foreground text-lg">+</span>}
+          {!collapsed && <span className="text-primary-foreground">New Project</span>}
+          {collapsed && <span className="text-primary-foreground text-lg">+</span>}
         </button>
         <div className="mt-4 space-y-0.5">
           <SidebarItem icon={Settings} label="Settings" collapsed={collapsed} />
-          <SidebarItem icon={AlertCircle} label="Help" collapsed={collapsed} />
+          <SidebarItem icon={HelpCircle} label="Help & Support" collapsed={collapsed} />
         </div>
       </div>
     </aside>

@@ -3,6 +3,7 @@ import { buildButtonCSS, DEFAULT_BTN_CONFIG, type ButtonStyleConfig } from '@/co
 
 type Theme = 'light' | 'dark';
 type VisualPattern = 'nexus' | 'shopeers' | 'projectli' | 'magika' | 'workly' | 'taskplus' | 'eevo' | 'quantum' | 'resync';
+export type DashboardModel = 'nexus' | 'shopeers' | 'projectli' | 'workly';
 export type AuthFormSide = 'left' | 'center' | 'right';
 export type AuthBgKey =
   | 'none' | 'dark-veil' | 'soft-aurora' | 'aurora' | 'iridescence' | 'silk'
@@ -37,6 +38,7 @@ export interface DashboardConfig {
   bgGradientSize: number;      // % 20–200
   bgGradientX: number;         // % 0–100
   bgGradientY: number;         // % 0–100
+  bgGradientUseAccent: boolean;
   // Header + Sidebar chrome (unified)
   chromeOpacity: number;
   chromeBlur: boolean;
@@ -66,6 +68,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
   bgGradientSize: 80,
   bgGradientX: 0,
   bgGradientY: 0,
+  bgGradientUseAccent: false,
   chromeOpacity: 100,
   chromeBlur: false,
   chromeBlurIntensity: 8,
@@ -105,12 +108,14 @@ interface ThemeContextType {
   setButtonStyleConfig: (cfg: ButtonStyleConfig) => void;
   dashboardConfig: DashboardConfig;
   setDashboardConfig: React.Dispatch<React.SetStateAction<DashboardConfig>>;
+  dashboardModel: DashboardModel;
+  setDashboardModel: React.Dispatch<React.SetStateAction<DashboardModel>>;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const PATTERN_DEFAULTS: Record<VisualPattern, string> = {
-  nexus: '240 5.9% 10%', shopeers: '221 83% 53%', projectli: '142 71% 45%',
+  nexus: '222 10% 8%', shopeers: '221 83% 53%', projectli: '142 71% 45%',
   magika: '262 83% 58%', workly: '263 70% 58%', taskplus: '0 84.2% 60.2%',
   eevo: '84 100% 59%', quantum: '221 83% 53%', resync: '142 71% 45%',
 };
@@ -126,7 +131,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [visualPattern, setVisualPattern] = useState<VisualPattern>(
     () => (localStorage.getItem('visualPattern') as VisualPattern) || 'nexus');
   const [accentColor, setAccentColorState] = useState<string>(
-    () => localStorage.getItem('accentColor') || '240 5.9% 10%');
+    () => localStorage.getItem('accentColor') || '222 10% 8%');
   const [useCustomAccent, setUseCustomAccent] = useState<boolean>(
     () => localStorage.getItem('useCustomAccent') === 'true');
   const [borderRadius, setBorderRadius] = useState<number>(
@@ -148,6 +153,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     try { return JSON.parse(localStorage.getItem('dashboardConfig') || 'null') || DEFAULT_DASHBOARD_CONFIG; }
     catch { return DEFAULT_DASHBOARD_CONFIG; }
   });
+  const [dashboardModel, setDashboardModel] = useState<DashboardModel>(
+    () => (localStorage.getItem('dashboardModel') as DashboardModel) || 'nexus'
+  );
 
   const activeAccentColor = useMemo(
     () => (useCustomAccent ? accentColor : PATTERN_DEFAULTS[visualPattern]),
@@ -173,7 +181,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('authBgConfigs', JSON.stringify(authBgConfigs));
     localStorage.setItem('buttonStyleConfig', JSON.stringify(buttonStyleConfig));
     localStorage.setItem('dashboardConfig', JSON.stringify(dashboardConfig));
-  }, [visualPattern, useCustomAccent, borderRadius, showShadows, authFormWidth, authBg, authBgConfigs, buttonStyleConfig, dashboardConfig]);
+    localStorage.setItem('dashboardModel', dashboardModel);
+  }, [visualPattern, useCustomAccent, borderRadius, showShadows, authFormWidth, authBg, authBgConfigs, buttonStyleConfig, dashboardConfig, dashboardModel]);
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -235,7 +244,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       authFormSide, setAuthFormSide,
       authBg, setAuthBg, authBgConfigs, setAuthBgConfig,
       buttonStyleConfig, setButtonStyleConfig,
-      dashboardConfig, setDashboardConfig
+      dashboardConfig, setDashboardConfig,
+      dashboardModel, setDashboardModel
     }}>
       {children}
     </ThemeContext.Provider>
@@ -291,6 +301,7 @@ export function useCardStyle(gradientPos?: { x?: number; y?: number }): React.CS
     backgroundColor: `hsl(var(--card) / ${cardOpacity / 100})`,
     backdropFilter: cardBlur ? `blur(${cardBlurIntensity}px)` : undefined,
     WebkitBackdropFilter: cardBlur ? `blur(${cardBlurIntensity}px)` : undefined,
+    borderRadius: 'var(--radius)',
     ...(backgroundImage ? { backgroundImage } : {}),
   };
 }
