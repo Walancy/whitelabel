@@ -1,12 +1,15 @@
-import { Search, Gift, Bell, Plus, ChevronDown, Sun, Moon, LayoutDashboard, CreditCard, Users, MessageSquare } from 'lucide-react';
+import { Search, Gift, Bell, Plus, ChevronDown, Sun, Moon, LayoutDashboard, CreditCard, Users, MessageSquare, LayoutGrid, Settings2, Trash2 } from 'lucide-react';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
+import { useDashboard } from '@/features/dashboard/context/DashboardContext';
+import { cn } from '@/lib/utils';
 
 export const Header = () => {
   const { theme, toggleTheme, dashboardConfig } = useTheme();
   const chromeStyle = useChromeStyle();
+  const { isEditing, setIsEditing, isConfigOpen, setIsConfigOpen, isPanelOpen, setIsPanelOpen, onReset, isModularPage } = useDashboard();
 
   return (
-    <header className="h-16 border-b flex items-center justify-between px-6 sticky top-0 z-30 font-sans transition-all duration-300" style={chromeStyle}>
+    <header className="h-16 border-b flex items-center justify-between px-6 sticky top-0 z-30 font-sans transition-all duration-300 bg-background" style={chromeStyle}>
       
       {dashboardConfig.layoutMode === 'topbar' ? (
         <div className="flex items-center gap-8 flex-1">
@@ -45,6 +48,77 @@ export const Header = () => {
               <span>⌘K</span>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Modular Dashboard Controls */}
+      {isModularPage && (
+        <div className="flex items-center gap-2 mx-4 animate-in fade-in slide-in-from-top-1 duration-300">
+          <button
+            onClick={() => {
+              setIsEditing(!isEditing);
+              if (isEditing) {
+                setIsPanelOpen(false);
+                setIsConfigOpen(false);
+              }
+            }}
+            className={cn(
+              'flex items-center gap-1.5 h-8 px-4 rounded-lg text-[12px] font-semibold border transition-all',
+              isEditing
+                ? 'bg-primary text-primary-foreground border-primary shadow-[0_0_12px_rgba(var(--primary),0.3)]'
+                : 'border-border text-foreground bg-card hover:border-primary/50 hover:bg-accent/50'
+            )}
+          >
+            {isEditing ? 'Salvar Dashboard' : 'Editar Layout'}
+          </button>
+
+          {isEditing && (
+            <div className="flex items-center gap-2 animate-in zoom-in-95 fade-in duration-200">
+              <button
+                onClick={() => {
+                  setIsPanelOpen(!isPanelOpen);
+                  setIsConfigOpen(false);
+                }}
+                className={cn(
+                  'flex items-center gap-1.5 h-8 px-3 rounded-lg text-[12px] font-semibold border transition-all',
+                  isPanelOpen
+                    ? 'bg-accent text-accent-foreground border-border'
+                    : 'border-border text-foreground bg-card hover:border-primary/50 hover:bg-accent/50'
+                )}
+              >
+                <LayoutGrid size={13} />
+                + Widget
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsConfigOpen(!isConfigOpen);
+                  setIsPanelOpen(false);
+                }}
+                className={cn(
+                  'flex items-center gap-1.5 h-8 px-3 rounded-lg text-[12px] font-semibold border transition-all',
+                  isConfigOpen
+                    ? 'bg-accent text-accent-foreground border-border'
+                    : 'border-border text-foreground bg-card hover:border-primary/50 hover:bg-accent/50'
+                )}
+              >
+                <Settings2 size={13} />
+                Ajustes
+              </button>
+
+              <button
+                onClick={() => {
+                  if (window.confirm('Tem certeza que deseja limpar todos os widgets?')) {
+                    onReset();
+                  }
+                }}
+                className="flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all font-semibold"
+                title="Limpar Dashboard"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -158,6 +158,12 @@ export const EFFECT_CONTROLS: Partial<Record<AuthBgKey, ControlDef[]>> = {
     { type: 'range', key: 'strength', label: 'Strength', min: 0.01, max: 0.5, step: 0.01, default: 0.18 },
     { type: 'range', key: 'relaxation', label: 'Relaxation', min: 0.5, max: 0.99, step: 0.01, default: 0.9 },
   ],
+  'interactive-grid': [BG,
+    { type: 'range', key: 'width', label: 'Cell Width', min: 10, max: 100, step: 2, default: 40 },
+    { type: 'range', key: 'height', label: 'Cell Height', min: 10, max: 100, step: 2, default: 40 },
+    { type: 'range', key: 'squaresX', label: 'Squares X', min: 10, max: 200, step: 1, default: 40 },
+    { type: 'range', key: 'squaresY', label: 'Squares Y', min: 10, max: 200, step: 1, default: 40 },
+  ],
 };
 
 export const getDefaultConfig = (bg: AuthBgKey): Record<string, number | string | boolean> => {

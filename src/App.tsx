@@ -8,8 +8,10 @@ import { ShopeersDashboard } from './pages/shopeers/ShopeersDashboard';
 import { ProjectliDashboard } from './pages/projectli/ProjectliDashboard';
 import { WorklyDashboard } from './pages/workly/WorklyDashboard';
 import { UsersTablePage } from './pages/shared/UsersTablePage';
+import { DashboardPage as ModularDashboard } from './features/dashboard/pages/DashboardPage';
+import { DashboardProvider } from './features/dashboard/context/DashboardContext';
 
-export type AppPage = 'dashboard' | 'payments' | 'users';
+export type AppPage = 'dashboard' | 'payments' | 'users' | 'modular';
 
 function AppContent({ setIsLoggedIn }: { setIsLoggedIn: (v: boolean) => void }) {
   const { dashboardModel } = useTheme();
@@ -19,6 +21,10 @@ function AppContent({ setIsLoggedIn }: { setIsLoggedIn: (v: boolean) => void }) 
     // Shared table page works for all layouts
     if (page === 'users') {
       return <div className="h-full"><UsersTablePage /></div>;
+    }
+
+    if (page === 'modular') {
+      return <div className="h-full"><ModularDashboard /></div>;
     }
 
     if (dashboardModel === 'nexus') {
@@ -65,7 +71,9 @@ function App() {
       {!isLoggedIn ? (
         <AuthPage onLogin={() => setIsLoggedIn(true)} />
       ) : (
-        <AppContent setIsLoggedIn={setIsLoggedIn} />
+        <DashboardProvider>
+          <AppContent setIsLoggedIn={setIsLoggedIn} />
+        </DashboardProvider>
       )}
     </ThemeProvider>
   );

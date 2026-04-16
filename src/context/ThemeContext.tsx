@@ -9,7 +9,7 @@ export type AuthBgKey =
   | 'none' | 'dark-veil' | 'soft-aurora' | 'aurora' | 'iridescence' | 'silk'
   | 'color-bends' | 'pixel-blast' | 'beams' | 'gradient-blinds' | 'liquid-ether'
   | 'line-waves' | 'light-rays' | 'grainient' | 'grid-distortion'
-  | 'dot-grid' | 'shape-grid';
+  | 'dot-grid' | 'shape-grid' | 'interactive-grid';
 
 export type AuthBgConfig = Record<string, number | string | boolean>;
 
@@ -20,6 +20,7 @@ export type SidebarBtnGap = number;
 export type SidebarIconColor = 'foreground' | 'background' | 'primary';
 export type SidebarActiveTextColor = 'foreground' | 'white' | 'black' | 'primary';
 export type DashboardBgEffect = 'none' | AuthBgKey;
+export type TableStyle = 'tablegus' | 'glass' | 'corporate' | 'modern' | 'sleek' | 'minimalist' | 'striped' | 'cards' | 'compact' | 'glow' | 'futuristic';
 
 export interface DashboardConfig {
   layoutMode: LayoutMode;
@@ -51,6 +52,8 @@ export interface DashboardConfig {
   cardGradientColor: string;
   cardGradientOpacity: number;
   cardGradientUseAccent: boolean;
+  // Tables
+  tableStyle: TableStyle;
 }
 
 export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
@@ -79,6 +82,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardConfig = {
   cardGradientColor: '142 71% 45%',
   cardGradientOpacity: 15,
   cardGradientUseAccent: false,
+  tableStyle: 'tablegus',
 };
 
 interface ThemeContextType {

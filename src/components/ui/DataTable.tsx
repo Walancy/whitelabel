@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, X, Check
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useCardStyle } from '@/context/ThemeContext';
+import { useCardStyle, useTheme } from '@/context/ThemeContext';
 
 // ─── Checkbox ─────────────────────────────────────────────────────────────────
 interface TableCheckboxProps {
@@ -162,8 +162,163 @@ export function DataTable<T extends { id: string | number }>({
   filterOptions = [], onRowClick, rowActions, pageSize = 10,
   variant = 'default',
 }: DataTableProps<T>) {
+  const { dashboardConfig } = useTheme();
   const cardStyle = useCardStyle();
-  const vc = getVariantClasses(variant);
+  const baseVc = getVariantClasses(variant);
+  
+  const tableStyle = dashboardConfig.tableStyle;
+  const isGus = tableStyle === 'tablegus';
+  
+  const getStyleClasses = () => {
+    switch (tableStyle) {
+      case 'tablegus':
+        return {
+          wrapper: "rounded-[16px] border border-border bg-card overflow-hidden",
+          thead: "bg-[#F5F3EF] dark:bg-[#1C1C22]",
+          th: "px-4 py-3 font-semibold text-foreground text-[11px] uppercase",
+          tr: "border-b border-border/80 transition-colors hover:bg-muted/60 last:border-b-0",
+          td: "px-4 py-3 text-sm",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-4 py-3 border-t border-border/80 shrink-0 text-xs text-muted-foreground rounded-b-[16px] bg-[#F5F3EF]/30 dark:bg-[#1C1C22]/30",
+          paginationBtn: "h-7 min-w-[28px] px-1 flex items-center justify-center rounded-lg hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-foreground border border-transparent hover:border-border/30",
+          paginationBtnActive: "bg-black/10 dark:bg-white/10 font-bold border-border/40",
+        };
+      case 'glass':
+        return {
+          wrapper: "rounded-[var(--radius)] border border-white/20 bg-white/5 backdrop-blur-xl shadow-xl overflow-hidden",
+          thead: "bg-white/5",
+          th: "px-3 py-2 font-medium text-foreground/80 text-xs tracking-wider",
+          tr: "border-b border-white/10 transition-colors hover:bg-white/10 last:border-b-0",
+          td: "px-3 py-2 text-foreground/90 text-[13px]",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-4 py-2.5 border-t border-white/20 shrink-0 text-xs text-foreground/70 bg-white/5 rounded-b-[var(--radius)]",
+          paginationBtn: "h-7 w-7 flex items-center justify-center rounded-full border border-white/20 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-white backdrop-blur-md",
+          paginationBtnActive: "bg-white/30 font-bold border-white/50",
+        };
+      case 'corporate':
+        return {
+          wrapper: "rounded-md border border-border bg-background shadow-sm overflow-hidden",
+          thead: "bg-muted/80 text-foreground",
+          th: "px-4 py-2.5 font-semibold text-[10px] uppercase tracking-wider",
+          tr: "border-b border-border transition-colors hover:bg-muted/60 even:bg-muted/20",
+          td: "px-4 py-2.5 text-[13px]",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-4 py-2.5 border-t border-border bg-muted/30 shrink-0 text-xs text-muted-foreground",
+          paginationBtn: "h-7 min-w-[28px] px-1.5 flex items-center justify-center rounded-sm border border-border bg-card hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all font-medium",
+          paginationBtnActive: "border-primary text-primary bg-primary/10 shadow-sm",
+        };
+      case 'modern':
+        return {
+          wrapper: "bg-background/40 border border-border rounded-xl p-1",
+          thead: "bg-transparent",
+          th: "px-4 py-2 font-medium text-muted-foreground text-[11px] uppercase tracking-wider",
+          tr: "bg-card border border-border rounded-lg shadow-sm hover:shadow-md hover:border-primary/40 transition-all",
+          td: "px-4 py-3 first:rounded-l-lg last:rounded-r-lg text-[13px]",
+          table: "w-full border-separate border-spacing-y-2",
+          pagination: "flex items-center justify-between px-2 py-3 mt-2 border-t border-border shrink-0 text-xs text-muted-foreground bg-transparent",
+          paginationBtn: "h-8 w-8 flex items-center justify-center rounded-lg bg-card border border-border shadow-sm hover:border-primary/50 hover:text-primary disabled:opacity-30 disabled:cursor-not-allowed transition-all",
+          paginationBtnActive: "border-primary bg-primary text-primary-foreground shadow-md",
+        };
+      case 'sleek':
+        return {
+          wrapper: "rounded-2xl border border-border bg-background/50 backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(255,255,255,0.01)] overflow-hidden",
+          thead: "bg-transparent",
+          th: "px-6 py-4 font-medium text-muted-foreground text-xs",
+          tr: "border-b border-border/50 transition-all hover:bg-accent/40 last:border-b-0",
+          td: "px-6 py-4 text-[13px]",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-6 py-4 border-t border-border shrink-0 text-[13px] text-muted-foreground rounded-b-2xl",
+          paginationBtn: "h-8 min-w-[32px] px-2 flex items-center justify-center rounded-md border border-transparent hover:border-border hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all font-medium",
+          paginationBtnActive: "border-border/80 text-foreground bg-accent/80 font-semibold shadow-sm",
+        };
+      case 'minimalist':
+        return {
+          wrapper: "bg-transparent border border-border/80 rounded-lg px-2 overflow-hidden",
+          thead: "bg-transparent",
+          th: "px-2 py-3 font-medium text-muted-foreground text-xs",
+          tr: "hover:bg-accent/10 hover:text-primary transition-colors border-b border-border/40 border-dashed",
+          td: "px-2 py-3 text-[13px]",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between py-4 border-t-2 border-border/80 shrink-0 text-xs text-muted-foreground",
+          paginationBtn: "h-6 text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed transition-all px-2 font-medium flex items-center justify-center rounded border border-transparent hover:border-border/50",
+          paginationBtnActive: "text-primary border-primary",
+        };
+      case 'striped':
+        return {
+          wrapper: "rounded-md border border-border bg-card overflow-hidden shadow-sm",
+          thead: "bg-muted/40",
+          th: "px-4 py-2.5 font-medium text-muted-foreground text-[11px] uppercase",
+          tr: "even:bg-muted/20 border-b border-border/40 hover:bg-muted/40 transition-colors last:border-b-0",
+          td: "px-4 py-2.5 text-[13px]",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-4 py-2.5 border-t border-border shrink-0 text-xs text-muted-foreground",
+          paginationBtn: "h-7 min-w-[28px] px-1 flex items-center justify-center rounded-sm border border-border bg-card hover:bg-accent disabled:opacity-30 transition-all font-medium",
+          paginationBtnActive: "border-primary bg-primary text-primary-foreground",
+        };
+      case 'cards':
+        return {
+          wrapper: "bg-transparent border border-border/60 rounded-[16px] p-2 overflow-hidden",
+          thead: "bg-transparent",
+          th: "px-4 py-2 font-semibold text-muted-foreground text-[11px] uppercase tracking-wider",
+          tr: "hover:-translate-y-[1px] transition-all relative group",
+          td: "bg-card px-4 py-4 first:rounded-l-[16px] last:rounded-r-[16px] text-[13px]",
+          table: "w-full border-separate border-spacing-y-3",
+          pagination: "flex items-center justify-between px-2 py-3 mt-2 shrink-0 text-xs text-muted-foreground bg-transparent",
+          paginationBtn: "h-8 w-8 flex items-center justify-center rounded-xl bg-card border border-border hover:border-primary/40 hover:text-primary transition-all",
+          paginationBtnActive: "bg-primary text-primary-foreground border-primary",
+        };
+      case 'compact':
+        return {
+          wrapper: "rounded-sm border border-border bg-card overflow-hidden",
+          thead: "bg-muted/50",
+          th: "px-2 py-1.5 font-semibold text-foreground text-[10px] uppercase tracking-tight",
+          tr: "border-b border-border/80 hover:bg-muted/50 transition-colors last:border-b-0",
+          td: "px-2 py-1.5 text-[11px]",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-2 py-1.5 border-t border-border shrink-0 text-[10px] text-muted-foreground",
+          paginationBtn: "h-5 min-w-[24px] px-1 flex items-center justify-center rounded border border-transparent hover:border-border hover:bg-accent disabled:opacity-30 transition-all font-medium",
+          paginationBtnActive: "bg-accent/80 border-border text-foreground",
+        };
+      case 'glow':
+        return {
+           wrapper: "rounded-[var(--radius)] border border-primary/20 bg-background overflow-hidden relative shadow-[0_0_15px_rgba(var(--primary),0.05)]",
+           thead: "bg-primary/5",
+           th: "px-4 py-3 font-semibold text-primary/80 text-[11px] uppercase tracking-widest",
+           tr: "border-b border-primary/10 transition-all hover:bg-primary/5 hover:shadow-[inset_0_0_15px_rgba(var(--primary),0.1)] last:border-b-0",
+           td: "px-4 py-3 text-[13px] text-foreground/90",
+           table: "w-full border-collapse",
+           pagination: "flex items-center justify-between px-4 py-3 border-t border-primary/10 bg-primary/5 shrink-0 text-xs text-primary/70",
+           paginationBtn: "h-7 min-w-[28px] px-1 flex items-center justify-center rounded border border-primary/20 bg-background hover:bg-primary/10 hover:shadow-[0_0_10px_rgba(var(--primary),0.2)] disabled:opacity-30 transition-all text-primary",
+           paginationBtnActive: "bg-primary text-primary-foreground font-bold shadow-[0_0_15px_rgba(var(--primary),0.4)] border-primary",
+        };
+      case 'futuristic':
+        return {
+          wrapper: "rounded-[24px] border border-white/10 bg-gradient-to-br from-background/80 to-muted/20 backdrop-blur-3xl shadow-2xl overflow-hidden",
+          thead: "bg-transparent",
+          th: "px-5 py-4 font-bold text-foreground/70 text-[10px] uppercase tracking-[0.2em]",
+          tr: "border-b border-white/5 transition-all hover:bg-white/5 hover:scale-[1.005] last:border-b-0",
+          td: "px-5 py-4 text-[13px] text-foreground/90 font-light",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-6 py-4 border-t border-white/10 shrink-0 text-xs text-foreground/60 backdrop-blur-xl",
+          paginationBtn: "h-8 min-w-[32px] px-2 flex items-center justify-center rounded-full border border-white/10 hover:border-white/30 hover:bg-white/10 disabled:opacity-30 transition-all text-foreground/80",
+          paginationBtnActive: "bg-white/20 border-white/40 text-white font-medium",
+        };
+      default:
+        return {
+          wrapper: cn("border border-border bg-card overflow-hidden", baseVc.wrapper),
+          thead: baseVc.thead,
+          th: "px-3 py-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider",
+          tr: baseVc.tr,
+          td: "px-3 py-2 text-foreground text-[13px]",
+          table: "w-full border-collapse",
+          pagination: "flex items-center justify-between px-4 py-2.5 border-t border-border shrink-0 text-xs text-muted-foreground",
+          paginationBtn: "h-7 min-w-[28px] px-1 flex items-center justify-center rounded-[var(--radius)] border border-border hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all",
+          paginationBtnActive: "border-primary bg-primary text-primary-foreground",
+        };
+    }
+  };
+
+  const sc = getStyleClasses();
 
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<keyof T | null>(null);
@@ -199,6 +354,8 @@ export function DataTable<T extends { id: string | number }>({
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const pageData = filtered.slice((page - 1) * pageSize, page * pageSize);
+
+  const tbodyKey = `${page}-${String(sortKey)}-${sortDir}-${search}-${JSON.stringify(activeFilters)}`;
 
   const allSelected = pageData.length > 0 && pageData.every(r => selected.has(r.id));
   const toggleAll = () => setSelected(prev => {
@@ -295,12 +452,25 @@ export function DataTable<T extends { id: string | number }>({
       )}
 
       {/* ─── Table ─── */}
-      <div className={cn("flex-1 min-h-0 border border-border overflow-hidden flex flex-col", vc.wrapper)} style={cardStyle}>
-        <div className="flex-1 overflow-auto scrollbar-stylized min-h-0">
-          <table className="w-full border-collapse" role="grid">
-            <thead className={cn("sticky top-0 z-10", vc.thead)} style={cardStyle}>
+      <div 
+        className={cn(
+          "flex-1 min-h-0 flex flex-col relative", 
+          tableStyle !== 'modern' && "overflow-hidden",
+          sc.wrapper
+        )} 
+      >
+        {isGus && (
+          <div className="pointer-events-none absolute right-0 top-0 z-20 h-[44px] w-4 bg-[#F5F3EF] dark:bg-[#1C1C22]" />
+        )}
+        <div className={cn(
+          "flex-1 overflow-auto scrollbar-stylized min-h-0 px-1 -mx-1",
+          isGus && "[&::-webkit-scrollbar-track]:mt-[44px] [&::-webkit-scrollbar-track]:mb-1",
+          tableStyle === 'modern' && "px-2"
+        )}>
+          <table className={cn(sc.table, "whitespace-nowrap")} role="grid">
+            <thead className={cn("sticky top-0 z-10", sc.thead)}>
               <tr>
-                <th className="w-8 px-2.5 py-1.5">
+                <th className={cn(sc.th, "w-8 px-2.5 py-1.5")}>
                   <TableCheckbox
                     checked={allSelected}
                     indeterminate={selected.size > 0 && !allSelected}
@@ -311,13 +481,13 @@ export function DataTable<T extends { id: string | number }>({
                 {columns.map(col => (
                   <th
                     key={String(col.key)}
-                    className={cn(vc.th, col.width)}
+                    className={cn(sc.th, col.width)}
                     style={col.width ? { width: col.width } : undefined}
                   >
                     {col.sortable ? (
                       <button
                         onClick={() => handleSort(col.key)}
-                        className="flex items-center gap-1 !h-auto hover:text-foreground transition-colors group"
+                        className="flex items-center gap-1.5 !h-auto hover:text-foreground transition-all duration-200 group hover:bg-foreground/5 py-1 px-1.5 -ml-1.5 rounded-md active:scale-95"
                         aria-label={`Ordenar por ${col.label}`}
                       >
                         {col.label}
@@ -329,10 +499,10 @@ export function DataTable<T extends { id: string | number }>({
                     ) : col.label}
                   </th>
                 ))}
-                {rowActions && <th className="w-16 px-3 py-1.5" />}
+                {rowActions && <th className={cn(sc.th, "w-16 px-3 py-1.5")} />}
               </tr>
             </thead>
-            <tbody>
+            <tbody key={tbodyKey} className="animate-in fade-in slide-in-from-bottom-2 duration-300 ease-out">
               {pageData.length === 0 ? (
                 <tr>
                   <td colSpan={columns.length + 2} className="py-12 text-center text-sm text-muted-foreground">
@@ -344,12 +514,12 @@ export function DataTable<T extends { id: string | number }>({
                   key={row.id}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    vc.tr, 'text-xs',
+                    sc.tr,
                     onRowClick && 'cursor-pointer',
                     selected.has(row.id) && 'bg-primary/5'
                   )}
                 >
-                  <td className="w-8 px-2.5 py-2" onClick={e => { e.stopPropagation(); toggleOne(row.id); }}>
+                  <td className={cn(sc.td, "w-8 px-2.5 py-2")} onClick={e => { e.stopPropagation(); toggleOne(row.id); }}>
                     <TableCheckbox
                       checked={selected.has(row.id)}
                       onChange={() => toggleOne(row.id)}
@@ -357,12 +527,12 @@ export function DataTable<T extends { id: string | number }>({
                     />
                   </td>
                   {columns.map(col => (
-                    <td key={String(col.key)} className={vc.td}>
+                    <td key={String(col.key)} className={sc.td}>
                       {col.render ? col.render(row[col.key], row) : String(row[col.key] ?? '—')}
                     </td>
                   ))}
                   {rowActions && (
-                    <td className={vc.td} onClick={e => e.stopPropagation()}>
+                    <td className={sc.td} onClick={e => e.stopPropagation()}>
                       {rowActions(row)}
                     </td>
                   )}
@@ -373,16 +543,16 @@ export function DataTable<T extends { id: string | number }>({
         </div>
 
         {/* ─── Pagination ─── */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-border shrink-0 text-xs text-muted-foreground" style={cardStyle}>
+        <div className={sc.pagination}>
           <span>{filtered.length} registro{filtered.length !== 1 ? 's' : ''}</span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5 pl-4">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="h-7 w-7 flex items-center justify-center rounded-[var(--radius)] border border-border hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className={cn(sc.paginationBtn, "w-8 h-8")}
               aria-label="Página anterior"
             >
-              <ChevronLeft size={13} />
+              <ChevronLeft size={14} />
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1)
               .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
@@ -391,11 +561,10 @@ export function DataTable<T extends { id: string | number }>({
                 acc.push(p); return acc;
               }, [])
               .map((p, i) => p === '...' ? (
-                <span key={`e${i}`} className="px-1 text-muted-foreground">…</span>
+                <span key={`e${i}`} className="px-1 text-muted-foreground text-xs font-serif">…</span>
               ) : (
                 <button key={p} onClick={() => setPage(p as number)}
-                  className={cn('h-7 w-7 flex items-center justify-center rounded-[var(--radius)] border text-[11px] font-semibold transition-all',
-                    page === p ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:bg-accent')}
+                  className={cn(sc.paginationBtn, page === p && sc.paginationBtnActive)}
                   aria-label={`Página ${p}`} aria-current={page === p ? 'page' : undefined}
                 >
                   {p}
@@ -404,10 +573,10 @@ export function DataTable<T extends { id: string | number }>({
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="h-7 w-7 flex items-center justify-center rounded-[var(--radius)] border border-border hover:bg-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className={cn(sc.paginationBtn, "w-8 h-8")}
               aria-label="Próxima página"
             >
-              <ChevronRight size={13} />
+              <ChevronRight size={14} />
             </button>
           </div>
         </div>

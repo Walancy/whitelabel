@@ -16,7 +16,8 @@ import {
   Settings,
   HelpCircle,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  LayoutGrid
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -148,6 +149,7 @@ export const Sidebar = ({ activePage = 'dashboard', onNavigate }: { activePage?:
       <div className="flex-1 overflow-y-auto py-4 scrollbar-hide px-1">
         <SidebarSection title="General" collapsed={collapsed}>
           <SidebarItem icon={Compass} label="Dashboard" active={activePage === 'dashboard'} collapsed={collapsed} onClick={() => onNavigate?.('dashboard')} />
+          <SidebarItem icon={LayoutGrid} label="Modular" active={activePage === 'modular'} collapsed={collapsed} onClick={() => onNavigate?.('modular')} />
           <SidebarItem icon={ShoppingBag} label="Orders" badge="46" collapsed={collapsed} />
           <SidebarItem icon={Box} label="Products" collapsed={collapsed} />
           <SidebarItem icon={Users} label="Usuários" active={activePage === 'users'} collapsed={collapsed} onClick={() => onNavigate?.('users')} />

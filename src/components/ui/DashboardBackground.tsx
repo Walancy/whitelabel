@@ -20,6 +20,7 @@ const DotGrid = lazy(() => import('@/components/ui/DotGrid'));
 const ShapeGrid = lazy(() => import('@/components/ui/ShapeGrid'));
 const Grainient = lazy(() => import('@/components/ui/Grainient'));
 const GridDistortion = lazy(() => import('@/components/ui/GridDistortion'));
+const InteractiveGridPattern = lazy(() => import('@/components/ui/interactive-grid-pattern').then(m => ({ default: m.InteractiveGridPattern })));
 
 const shiftHue = (hsl: string, deg: number) =>
   hsl.replace(/^(\d+)/, (_, h) => String((Number(h) + deg) % 360));
@@ -81,11 +82,12 @@ export function DashboardBackground() {
             {bgEffect === 'gradient-blinds' && <GradientBlinds gradientColors={[hex, hex2]} blindCount={n('blindCount')} angle={n('angle')} noise={n('noise')} spotlightRadius={n('spotlightRadius')} spotlightSoftness={n('spotlightSoftness')} spotlightOpacity={n('spotlightOpacity')} mouseDampening={n('mouseDampening')} />}
             {bgEffect === 'liquid-ether' && <LiquidEther colors={[hex3, hex2, hex]} mouseForce={n('mouseForce')} cursorSize={n('cursorSize')} autoDemo autoSpeed={n('autoSpeed')} autoIntensity={n('autoIntensity')} resolution={n('resolution')} autoResumeDelay={0} />}
             {bgEffect === 'line-waves' && <LineWaves color1={hex} color2={hex2} color3={hex3} speed={n('speed')} innerLineCount={n('innerLineCount')} outerLineCount={n('outerLineCount')} warpIntensity={n('warpIntensity')} rotation={n('rotation')} edgeFadeWidth={n('edgeFadeWidth')} colorCycleSpeed={n('colorCycleSpeed')} brightness={n('brightness')} enableMouseInteraction mouseInfluence={n('mouseInfluence')} />}
-            {bgEffect === 'light-rays' && <LightRays raysOrigin={s('raysOrigin') as 'top-center'} raysColor={hex} raysSpeed={n('raysSpeed')} lightSpread={n('lightSpread')} rayLength={n('rayLength')} pulsating={b('pulsating')} fadeDistance={n('fadeDistance')} saturation={n('saturation')} followMouse mouseInfluence={n('mouseInfluence')} noiseAmount={n('noiseAmount')} distortion={n('distortion')} />}
+            {bgEffect === 'light-rays' && <LightRays raysOrigin={s('raysOrigin') as 'top-center'} raysColor={hex} raysSpeed={n('raysSpeed')} lightSpread={n('lightSpread')} rayLength={n('rayLength')} pulsating={b('pulsating')} fadeDistance={n('fadeDistance')} saturation={n('saturation')} followMouse mouseInfluence={n('mouseInfluence')} noiseAmount={n('noiseAmount')} distortion={n('distortion')} lightMode={theme === 'light'} />}
             {bgEffect === 'dot-grid' && <DotGrid dotSize={n('dotSize')} gap={n('gap')} baseColor={hex} activeColor={hex2} proximity={n('proximity')} speedTrigger={100} shockRadius={250} shockStrength={5} maxSpeed={n('maxSpeed')} returnDuration={n('returnDuration')} />}
             {bgEffect === 'shape-grid' && <ShapeGrid speed={n('speed')} squareSize={n('squareSize')} direction={s('direction') as 'right'} borderColor={hex + '60'} hoverFillColor={hex} shape={s('shape') as 'square'} hoverTrailAmount={n('hoverTrailAmount')} />}
             {bgEffect === 'grainient' && <Grainient color1={hex} color2={hex2} color3={hex3} timeSpeed={n('timeSpeed')} colorBalance={n('colorBalance')} warpStrength={n('warpStrength')} warpFrequency={n('warpFrequency')} warpSpeed={n('warpSpeed')} warpAmplitude={n('warpAmplitude')} blendAngle={n('blendAngle')} blendSoftness={n('blendSoftness')} rotationAmount={n('rotationAmount')} noiseScale={n('noiseScale')} grainAmount={n('grainAmount')} grainScale={n('grainScale')} grainAnimated={b('grainAnimated')} contrast={n('contrast')} gamma={n('gamma')} saturation={n('saturation')} centerX={n('centerX')} centerY={n('centerY')} zoom={n('zoom')} />}
             {bgEffect === 'grid-distortion' && <GridDistortion color1={hex} color2={hex2} color3={hex3} grid={n('grid')} mouse={n('mouse')} strength={n('strength')} relaxation={n('relaxation')} />}
+            {bgEffect === 'interactive-grid' && <InteractiveGridPattern color={theme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'} hoverColor={hex} width={n('width')} height={n('height')} squares={[Math.round(n('squaresX')), Math.round(n('squaresY'))]} className="[mask-image:radial-gradient(1000px_circle_at_center,white,transparent)] inset-x-0 inset-y-[-30%] h-[200%] skew-y-12" />}
           </Suspense>
         </div>
       )}

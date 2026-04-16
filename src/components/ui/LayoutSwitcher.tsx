@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Palette, CheckCircle2, Moon, Sun,
-  PanelLeft, PanelRight, Layers, Settings2, ChevronDown,
+  PanelLeft, PanelRight, Layers, Settings2, ChevronDown, ChevronRight,
   Wand2, Copy, Check as CheckIcon, ImageIcon
 } from 'lucide-react';
 import { useTheme, type DashboardBgEffect, type SidebarActiveStyle } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 import { AUTH_BG_OPTIONS } from '@/components/ui/AuthBackground';
 import { AuthBgSettingsPanel } from '@/components/ui/AuthBgSettingsPanel';
+import { EFFECT_CONTROLS, getDefaultConfig } from '@/components/ui/authBgControls';
 
 interface LayoutSwitcherProps {
   showFormWidthOption?: boolean;
@@ -31,13 +32,15 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
     accentColor, setAccentColor, useCustomAccent, setUseCustomAccent,
     activeAccentColor, borderRadius, setBorderRadius, showShadows, setShowShadows,
     authFormWidth, setAuthFormWidth, authFormSide, setAuthFormSide,
-    authBg, setAuthBg, dashboardConfig, setDashboardConfig,
+    authBg, setAuthBg, authBgConfigs, dashboardConfig, setDashboardConfig,
     dashboardModel, setDashboardModel
   } = useTheme();
 
   const [activeMenu, setActiveMenu] = useState<'visual' | 'color' | 'layout' | 'radius' | 'authbg' | 'form' | 'buttons' | 'dashbg' | null>(null);
   const [settingsMode, setSettingsMode] = useState<'none' | 'authbg'>('none');
   const [copied, setCopied] = useState(false);
+  const [isVisualLayoutOpen, setIsVisualLayoutOpen] = useState(true);
+  const [isTableStyleOpen, setIsTableStyleOpen] = useState(false);
   const dockRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -161,6 +164,54 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
   const buildConfigPrompt = useCallback((): string => {
     const dc = dashboardConfig;
     const accentHsl = `hsl(${activeAccentColor})`;
+
+    if (showFormWidthOption) {
+      const controls = EFFECT_CONTROLS[authBg] ?? [];
+      const defaults = getDefaultConfig(authBg);
+      const stored = authBgConfigs[authBg] ?? {};
+      const cfg = { ...defaults, ...stored } as Record<string, any>;
+      
+      const configPropsLines = controls.map(c => `- ${c.label}: **${cfg[c.key]}**`);
+
+      const lines: string[] = [
+        '# Configuração Atual da Tela de Login - Whitelabel',
+        '',
+        '## Visão Geral',
+        `- Layout Visual: **${patternNames[visualPattern] ?? visualPattern}**`,
+        `- Tema: **${theme === 'dark' ? 'Dark Mode' : 'Light Mode'}**`,
+        `- Cor Accent: **${accentColorName}** (${accentHsl})`,
+        `- Usar Cor Destaque Personalizada: **${useCustomAccent ? 'Sim' : 'Não'}**`,
+        `- Border Radius Global: **${borderRadius}%**`,
+        `- Sombras Globais: **${showShadows ? 'Ativadas' : 'Desativadas'}**`,
+        '',
+        '## Configuração da Tela de Login',
+        `- Efeito de Fundo: **${AUTH_BG_OPTIONS.find(o => o.value === authBg)?.label ?? authBg}**`,
+        `- Posição do Form: **${authFormSide === 'center' ? 'Centro' : authFormSide === 'left' ? 'Esquerda' : 'Direita'}**`,
+        `- Largura do Form: **${authFormWidth}%**`,
+        '',
+        ...(controls.length > 0 ? [
+          '## Props do Componente de Background',
+          ...configPropsLines,
+          ''
+        ] : []),
+        '---',
+        '',
+        '## Instrução para a IA',
+        '',
+        `Você é um assistente de desenvolvimento trabalhando no projeto Whitelabel.`,
+        `**O usuário selecionou o layout: ${patternNames[visualPattern] ?? visualPattern}.**`,
+        ``,
+        `Com base na configuração acima, ao gerar ou editar a **Tela de Login**:`,
+        `1. Utilize o layout **${patternNames[visualPattern] ?? visualPattern}** como referência principal.`,
+        `2. A cor accent ativa é ${accentHsl} — use-a em botões e destaques.`,
+        `3. O tema ativo é **${theme}** — fundo escuro/claro com texto contrastante.`,
+        `4. Posicione o formulário de login no lado **${authFormSide === 'center' ? 'Centro' : authFormSide === 'left' ? 'Esquerda' : 'Direita'}**.`,
+        `5. Utilize o componente de background animado **${AUTH_BG_OPTIONS.find(o => o.value === authBg)?.label ?? authBg}** por trás de toda a tela.`,
+        `6. Não hardcode cores (use sempre que possível as vars da aplicação ou tailwind/css apropriado).`
+      ];
+      return lines.join('\n');
+    }
+
     const lines: string[] = [
       '# Configuração Atual do Sistema Whitelabel',
       '',
@@ -204,6 +255,9 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
         `  - Opacidade: ${dc.cardGradientOpacity}%`,
       ] : []),
       '',
+      '## Estilo de Tabelas',
+      `- Estilo: **${dc.tableStyle === 'tablegus' ? 'Tablegus' : dc.tableStyle === 'glass' ? 'Glassmorphism' : dc.tableStyle === 'corporate' ? 'Corporativo' : dc.tableStyle === 'modern' ? 'Moderno' : dc.tableStyle === 'sleek' ? 'Sleek / Clean' : dc.tableStyle === 'minimalist' ? 'Minimalista' : dc.tableStyle === 'striped' ? 'Zebrado (Striped)' : dc.tableStyle === 'cards' ? 'Cards (Individuais)' : dc.tableStyle === 'compact' ? 'Compacto' : dc.tableStyle === 'glow' ? 'Glow (Cyber)' : dc.tableStyle === 'futuristic' ? 'Futurista' : 'Desconhecido'}**`,
+      '',
       '---',
       '',
       '## Instrução para a IA',
@@ -220,8 +274,11 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
       `5. Não hardcode cores — use as variáveis CSS (--primary, --accent, --foreground, etc.).`,
     ];
     return lines.join('\n');
-  }, [visualPattern, theme, accentColor, activeAccentColor, accentColorName, useCustomAccent,
-    borderRadius, showShadows, dashboardConfig, patternNames]);
+  }, [
+    showFormWidthOption, authBg, authBgConfigs, authFormSide, authFormWidth,
+    visualPattern, theme, accentColor, activeAccentColor, accentColorName, useCustomAccent,
+    borderRadius, showShadows, dashboardConfig, patternNames
+  ]);
 
   const handleCopyPrompt = useCallback(async () => {
     const prompt = buildConfigPrompt();
@@ -264,22 +321,81 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
             </div>
             <div className="h-px bg-white/10" />
             <div>
-              <span className="text-[10px] text-white/50 uppercase font-semibold mb-1.5 block px-1">Visual Layout</span>
-              <ul className="flex flex-col gap-0.5 max-h-[200px] overflow-y-auto scrollbar-stylized pr-1">
-                {patterns.map((pattern) => (
-                  <li
-                    key={pattern.id}
-                    onClick={() => setVisualPattern(pattern.id)}
-                    className={cn(
-                      'flex items-center justify-between px-3 py-2 text-xs rounded-md cursor-pointer transition-colors',
-                      visualPattern === pattern.id ? 'bg-white/15 font-semibold text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
-                    )}
-                  >
-                    <span>{pattern.name}</span>
-                    {visualPattern === pattern.id && <CheckCircle2 size={12} />}
-                  </li>
-                ))}
-              </ul>
+              <button 
+                onClick={() => setIsVisualLayoutOpen(!isVisualLayoutOpen)}
+                className="w-full flex items-center justify-between px-1 mb-1.5 focus:outline-none group opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <span className="text-[10px] text-white/50 uppercase font-semibold group-hover:text-white/80 transition-colors">Visual Layout</span>
+                <ChevronRight 
+                  size={14} 
+                  className={cn("text-white/40 transition-transform duration-200", isVisualLayoutOpen && "rotate-90")} 
+                />
+              </button>
+              
+              <div className={cn("grid transition-all duration-300 ease-in-out", isVisualLayoutOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                <div className="overflow-hidden">
+                  <ul className="flex flex-col gap-0.5 max-h-[200px] overflow-y-auto scrollbar-stylized pr-1 pb-1">
+                    {patterns.map((pattern) => (
+                      <li
+                        key={pattern.id}
+                        onClick={() => setVisualPattern(pattern.id)}
+                        className={cn(
+                          'flex items-center justify-between px-3 py-2 text-xs rounded-md cursor-pointer transition-colors',
+                          visualPattern === pattern.id ? 'bg-white/15 font-semibold text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                        )}
+                      >
+                        <span>{pattern.name}</span>
+                        {visualPattern === pattern.id && <CheckCircle2 size={12} />}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="h-px bg-white/10" />
+            <div>
+              <button 
+                onClick={() => setIsTableStyleOpen(!isTableStyleOpen)}
+                className="w-full flex items-center justify-between px-1 mb-1.5 focus:outline-none group opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <span className="text-[10px] text-white/50 uppercase font-semibold group-hover:text-white/80 transition-colors">Table Style</span>
+                <ChevronRight 
+                  size={14} 
+                  className={cn("text-white/40 transition-transform duration-200", isTableStyleOpen && "rotate-90")} 
+                />
+              </button>
+              
+              <div className={cn("grid transition-all duration-300 ease-in-out", isTableStyleOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                <div className="overflow-hidden">
+                  <ul className="flex flex-col gap-0.5 max-h-[160px] overflow-y-auto scrollbar-stylized pr-1 pb-1">
+                    {[
+                      { id: 'tablegus', name: 'Tablegus (Suave)' },
+                      { id: 'glass', name: 'Glass (Morfismo)' },
+                      { id: 'corporate', name: 'Corporativo (Linhas)' },
+                      { id: 'modern', name: 'Moderno (Flutuante)' },
+                      { id: 'sleek', name: 'Sleek (Elegante)' },
+                      { id: 'minimalist', name: 'Minimalista (Limpo)' },
+                      { id: 'striped', name: 'Zebrado Clássico' },
+                      { id: 'cards', name: 'Cards Isolados' },
+                      { id: 'compact', name: 'Extra Compacto' },
+                      { id: 'glow', name: 'Néon / Glow' },
+                      { id: 'futuristic', name: 'Futurista (Glass)' },
+                    ].map((style) => (
+                      <li
+                        key={style.id}
+                        onClick={() => setDashboardConfig(p => ({ ...p, tableStyle: style.id as any }))}
+                        className={cn(
+                          'flex items-center justify-between px-3 py-2 text-xs rounded-md cursor-pointer transition-colors',
+                          dashboardConfig.tableStyle === style.id ? 'bg-white/15 font-semibold text-white' : 'text-white/80 hover:bg-white/10 hover:text-white'
+                        )}
+                      >
+                        <span>{style.name}</span>
+                        {dashboardConfig.tableStyle === style.id && <CheckCircle2 size={12} />}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </Popover>
@@ -534,7 +650,10 @@ export const LayoutSwitcher = ({ showFormWidthOption = false }: LayoutSwitcherPr
       {activeMenu === 'dashbg' && settingsMode === 'authbg' && !showFormWidthOption && (
         <Popover title="Configurar Efeito" isWide>
           <div className="h-[350px] pr-1 [&_*]:text-foreground dark:[&_*]:text-foreground bg-background rounded-xl">
-            <AuthBgSettingsPanel onBack={() => setSettingsMode('none')} />
+            <AuthBgSettingsPanel
+              onBack={() => setSettingsMode('none')}
+              effectKey={dashboardConfig.bgEffect !== 'none' ? dashboardConfig.bgEffect : undefined}
+            />
           </div>
         </Popover>
       )}

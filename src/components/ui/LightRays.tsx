@@ -16,6 +16,7 @@ interface LightRaysProps {
   mouseInfluence?: number;
   noiseAmount?: number;
   distortion?: number;
+  lightMode?: boolean;
   className?: string;
 }
 
@@ -75,7 +76,7 @@ void main(){ vec4 c; mainImage(c,gl_FragCoord.xy); gl_FragColor=c; }`;
 const LightRays = ({
   raysOrigin='top-center', raysColor='#ffffff', raysSpeed=1, lightSpread=1,
   rayLength=2, pulsating=false, fadeDistance=1, saturation=1, followMouse=true,
-  mouseInfluence=0.1, noiseAmount=0, distortion=0, className=''
+  mouseInfluence=0.1, noiseAmount=0, distortion=0, lightMode=false, className=''
 }: LightRaysProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const uniformsRef = useRef<Record<string,{value:unknown}>>({});
@@ -148,6 +149,10 @@ const LightRays = ({
     if (followMouse) { window.addEventListener('mousemove', onMove); return () => window.removeEventListener('mousemove', onMove); }
   }, [followMouse]);
 
-  return <div ref={containerRef} className={className} style={{ position:'absolute',inset:0,overflow:'hidden' }} />;
+  return <div ref={containerRef} className={className} style={{
+    position: 'absolute', inset: 0, overflow: 'hidden',
+    mixBlendMode: lightMode ? 'multiply' : 'normal',
+    opacity: lightMode ? 0.7 : 1,
+  }} />;
 };
 export default LightRays;

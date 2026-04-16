@@ -19,12 +19,13 @@ const DotGrid = lazy(() => import('@/components/ui/DotGrid'));
 const ShapeGrid = lazy(() => import('@/components/ui/ShapeGrid'));
 const Grainient = lazy(() => import('@/components/ui/Grainient'));
 const GridDistortion = lazy(() => import('@/components/ui/GridDistortion'));
+const InteractiveGridPattern = lazy(() => import('@/components/ui/interactive-grid-pattern').then(m => ({ default: m.InteractiveGridPattern })));
 
 export type AuthBgKey =
   | 'none' | 'dark-veil' | 'soft-aurora' | 'aurora' | 'iridescence' | 'silk'
   | 'color-bends' | 'pixel-blast' | 'beams' | 'gradient-blinds' | 'liquid-ether'
   | 'line-waves' | 'light-rays' | 'grainient' | 'grid-distortion'
-  | 'dot-grid' | 'shape-grid';
+  | 'dot-grid' | 'shape-grid' | 'interactive-grid';
 
 export const AUTH_BG_OPTIONS: { value: AuthBgKey; label: string }[] = [
   { value: 'none', label: 'Nenhum' }, { value: 'liquid-ether', label: 'Liquid Ether' },
@@ -36,7 +37,7 @@ export const AUTH_BG_OPTIONS: { value: AuthBgKey; label: string }[] = [
   { value: 'beams', label: 'Beams' },
   { value: 'dot-grid', label: 'Dot Grid' }, { value: 'iridescence', label: 'Iridescence' },
   { value: 'shape-grid', label: 'Shape Grid' }, { value: 'grainient', label: 'Grainient' },
-  { value: 'grid-distortion', label: 'Grid Distortion' },
+  { value: 'grid-distortion', label: 'Grid Distortion' }, { value: 'interactive-grid', label: 'Interactive Grid' },
 ];
 
 const shiftHue = (hsl: string, deg: number) =>
@@ -75,11 +76,12 @@ export function AuthBackground({ override }: { override?: AuthBgKey }) {
         {active === 'gradient-blinds' && <GradientBlinds gradientColors={[hex, hex2]} blindCount={n('blindCount')} angle={n('angle')} noise={n('noise')} spotlightRadius={n('spotlightRadius')} spotlightSoftness={n('spotlightSoftness')} spotlightOpacity={n('spotlightOpacity')} mouseDampening={n('mouseDampening')} />}
         {active === 'liquid-ether' && <LiquidEther colors={[hex3, hex2, hex]} mouseForce={n('mouseForce')} cursorSize={n('cursorSize')} autoDemo autoSpeed={n('autoSpeed')} autoIntensity={n('autoIntensity')} resolution={n('resolution')} autoResumeDelay={0} />}
         {active === 'line-waves' && <LineWaves color1={hex} color2={hex2} color3={hex3} speed={n('speed')} innerLineCount={n('innerLineCount')} outerLineCount={n('outerLineCount')} warpIntensity={n('warpIntensity')} rotation={n('rotation')} edgeFadeWidth={n('edgeFadeWidth')} colorCycleSpeed={n('colorCycleSpeed')} brightness={n('brightness')} enableMouseInteraction mouseInfluence={n('mouseInfluence')} />}
-        {active === 'light-rays' && <LightRays raysOrigin={s('raysOrigin') as 'top-center'} raysColor={hex} raysSpeed={n('raysSpeed')} lightSpread={n('lightSpread')} rayLength={n('rayLength')} pulsating={b('pulsating')} fadeDistance={n('fadeDistance')} saturation={n('saturation')} followMouse mouseInfluence={n('mouseInfluence')} noiseAmount={n('noiseAmount')} distortion={n('distortion')} />}
+        {active === 'light-rays' && <LightRays raysOrigin={s('raysOrigin') as 'top-center'} raysColor={hex} raysSpeed={n('raysSpeed')} lightSpread={n('lightSpread')} rayLength={n('rayLength')} pulsating={b('pulsating')} fadeDistance={n('fadeDistance')} saturation={n('saturation')} followMouse mouseInfluence={n('mouseInfluence')} noiseAmount={n('noiseAmount')} distortion={n('distortion')} lightMode={theme === 'light'} />}
         {active === 'dot-grid' && <DotGrid dotSize={n('dotSize')} gap={n('gap')} baseColor={hex} activeColor={hex2} proximity={n('proximity')} speedTrigger={100} shockRadius={250} shockStrength={5} maxSpeed={n('maxSpeed')} returnDuration={n('returnDuration')} />}
         {active === 'shape-grid' && <ShapeGrid speed={n('speed')} squareSize={n('squareSize')} direction={s('direction') as 'right'} borderColor={hex + '60'} hoverFillColor={hex} shape={s('shape') as 'square'} hoverTrailAmount={n('hoverTrailAmount')} />}
         {active === 'grainient' && <Grainient color1={hex} color2={hex2} color3={hex3} timeSpeed={n('timeSpeed')} colorBalance={n('colorBalance')} warpStrength={n('warpStrength')} warpFrequency={n('warpFrequency')} warpSpeed={n('warpSpeed')} warpAmplitude={n('warpAmplitude')} blendAngle={n('blendAngle')} blendSoftness={n('blendSoftness')} rotationAmount={n('rotationAmount')} noiseScale={n('noiseScale')} grainAmount={n('grainAmount')} grainScale={n('grainScale')} grainAnimated={b('grainAnimated')} contrast={n('contrast')} gamma={n('gamma')} saturation={n('saturation')} centerX={n('centerX')} centerY={n('centerY')} zoom={n('zoom')} />}
         {active === 'grid-distortion' && <GridDistortion color1={hex} color2={hex2} color3={hex3} grid={n('grid')} mouse={n('mouse')} strength={n('strength')} relaxation={n('relaxation')} />}
+        {active === 'interactive-grid' && <InteractiveGridPattern color={theme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'} hoverColor={hex} width={n('width')} height={n('height')} squares={[Math.round(n('squaresX')), Math.round(n('squaresY'))]} className="[mask-image:radial-gradient(1000px_circle_at_center,white,transparent)] inset-x-0 inset-y-[-30%] h-[200%] skew-y-12" />}
       </Suspense>
     </div>
   );

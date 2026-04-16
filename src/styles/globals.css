@@ -137,10 +137,15 @@ input:-webkit-autofill:active {
 }
 
 .scrollbar-stylized::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/20 rounded-full;
+  background-color: transparent;
+  border-radius: 9999px;
 }
 
-.scrollbar-stylized::-webkit-scrollbar-thumb:hover {
+.scrollbar-stylized:hover::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20;
+}
+
+.scrollbar-stylized:hover::-webkit-scrollbar-thumb:hover {
   @apply bg-muted-foreground/40;
 }
 

@@ -1,12 +1,18 @@
 import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
-import type { AuthBgConfig } from '@/context/ThemeContext';
+import type { AuthBgConfig, AuthBgKey } from '@/context/ThemeContext';
 import { EFFECT_CONTROLS, getDefaultConfig } from '@/components/ui/authBgControls';
 import type { ControlDef } from '@/components/ui/authBgControls';
 import { AUTH_BG_OPTIONS } from '@/components/ui/AuthBackground';
 
-interface AuthBgSettingsPanelProps { onBack: () => void; }
+interface AuthBgSettingsPanelProps {
+  onBack: () => void;
+  /** Quando fornecido, configura este efeito (modo dashboard). Se omitido, usa authBg do contexto. */
+  effectKey?: AuthBgKey;
+  onConfigChange?: (key: string, val: number | string | boolean) => void;
+  onReset?: () => void;
+}
 
 function ControlRow({ control, value, onChange }: {
   control: ControlDef;
@@ -115,21 +121,28 @@ function ControlRow({ control, value, onChange }: {
   return null;
 }
 
-export function AuthBgSettingsPanel({ onBack }: AuthBgSettingsPanelProps) {
+export function AuthBgSettingsPanel({ onBack, effectKey, onConfigChange, onReset }: AuthBgSettingsPanelProps) {
   const { authBg, authBgConfigs, setAuthBgConfig } = useTheme();
-  if (authBg === 'none') return null;
 
-  const controls = EFFECT_CONTROLS[authBg] ?? [];
-  const defaults = getDefaultConfig(authBg) as AuthBgConfig;
-  const stored = (authBgConfigs[authBg] ?? {}) as AuthBgConfig;
+  const activeKey: AuthBgKey = effectKey ?? authBg;
+  if (activeKey === 'none') return null;
+
+  const controls = EFFECT_CONTROLS[activeKey] ?? [];
+  const defaults = getDefaultConfig(activeKey) as AuthBgConfig;
+  const stored = (authBgConfigs[activeKey] ?? {}) as AuthBgConfig;
   const cfg: AuthBgConfig = { ...defaults, ...stored };
 
-  const handleChange = (key: string, val: number | string | boolean) =>
-    setAuthBgConfig(authBg, { ...cfg, [key]: val });
+  const handleChange = (key: string, val: number | string | boolean) => {
+    if (onConfigChange) { onConfigChange(key, val); return; }
+    setAuthBgConfig(activeKey, { ...cfg, [key]: val });
+  };
 
-  const handleReset = () => setAuthBgConfig(authBg, { ...defaults });
+  const handleReset = () => {
+    if (onReset) { onReset(); return; }
+    setAuthBgConfig(activeKey, { ...defaults });
+  };
 
-  const label = AUTH_BG_OPTIONS.find(o => o.value === authBg)?.label ?? authBg;
+  const label = AUTH_BG_OPTIONS.find(o => o.value === activeKey)?.label ?? activeKey;
 
   return (
     <div className="flex flex-col gap-0 h-full">
@@ -158,8 +171,8 @@ export function AuthBgSettingsPanel({ onBack }: AuthBgSettingsPanelProps) {
           <p className="text-[10px] text-muted-foreground text-center py-4">Sem configurações disponíveis.</p>
         )}
         {(() => {
-          const bgColorControl = controls.find(c => c.key === 'bgColor');
-          const restControls = controls.filter(c => c.key !== 'bgColor');
+          const bgColorControl = controls.find((c: ControlDef) => c.key === 'bgColor');
+          const restControls = controls.filter((c: ControlDef) => c.key !== 'bgColor');
           return (
             <>
               {bgColorControl && (
@@ -173,7 +186,7 @@ export function AuthBgSettingsPanel({ onBack }: AuthBgSettingsPanelProps) {
                   {restControls.length > 0 && <div className="h-px bg-border" />}
                 </>
               )}
-              {restControls.map((control) => (
+              {restControls.map((control: ControlDef) => (
                 <ControlRow
                   key={control.key}
                   control={control}
