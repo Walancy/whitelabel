@@ -66,7 +66,7 @@ export default function Aurora({
     gl.clearColor(0, 0, 0, 0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-    let program: ReturnType<typeof Program.prototype.constructor> | null = null;
+    let program: InstanceType<typeof Program> | null = null;
     const geometry = new Triangle(gl);
     if (geometry.attributes.uv) delete (geometry.attributes as Record<string, unknown>).uv;
     const toStops = (stops: string[]) => stops.map(hex => { const c = new OGLColor(hex); return [c.r, c.g, c.b]; });

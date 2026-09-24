@@ -1,4 +1,4 @@
-import { Search, Bell, Grid, Plus, Sun, Moon, Link } from 'lucide-react';
+import { Search, Bell, Plus, Sun, Moon, Link } from 'lucide-react';
 import { useTheme, useChromeStyle } from '@/context/ThemeContext';
 
 export const ReSyncHeader = () => {
