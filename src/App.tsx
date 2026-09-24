@@ -13,7 +13,7 @@ import { DashboardProvider } from './features/dashboard/context/DashboardContext
 
 export type AppPage = 'dashboard' | 'payments' | 'users' | 'modular';
 
-function AppContent({ setIsLoggedIn }: { setIsLoggedIn: (v: boolean) => void }) {
+function AppContent() {
   const { dashboardModel } = useTheme();
   const [page, setPage] = useState<AppPage>('dashboard');
 
@@ -72,7 +72,7 @@ function App() {
         <AuthPage onLogin={() => setIsLoggedIn(true)} />
       ) : (
         <DashboardProvider>
-          <AppContent setIsLoggedIn={setIsLoggedIn} />
+          <AppContent />
         </DashboardProvider>
       )}
     </ThemeProvider>

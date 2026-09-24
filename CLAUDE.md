@@ -1,3 +1,18 @@
+## Stack obrigatória deste projeto
+
+- Framework: **React 19 + Vite + TypeScript** (SPA, sem Next.js — decisão confirmada com o usuário).
+- Estilização: **Tailwind CSS + shadcn/ui é obrigatório** para qualquer componente novo de UI (botão, input, select, dialog, dropdown, tabs, tabela, badge, tooltip, toast, etc.). Nunca crie um `<button>`/`<input>` cru quando existir (ou puder existir) um componente equivalente em `src/components/ui`.
+  - Componentes shadcn ficam em `src/components/ui` (alias `@/components/ui`), config em `components.json`.
+  - Para adicionar um novo componente: `bun run shadcn add <componente>` (usa `bunx shadcn@latest`).
+  - Customize sempre os componentes gerados para respeitar os tokens de `src/styles/globals.css` (cores via `hsl(var(--token))`, nunca cor hardcoded) e a regra de "nunca usar sombras/bordas decorativas" — bordas só quando estruturalmente necessárias (ex.: separar um popover/dialog do conteúdo por trás).
+  - Botões e inputs/selects usam `h-10` (2.5rem) por padrão, para se manterem do mesmo tamanho.
+- Gerenciador de pacotes: **Bun** (`bun install`, `bun run <script>`). Não usar `npm`/`yarn`/`pnpm` neste projeto — não versionar `package-lock.json`.
+- Versões fixas via **Mise** (`.mise.toml`): Node e Bun. Rode `mise install` uma vez ao clonar o repo. A versão do React fica fixa (sem `^`) em `package.json`, já que o Mise não gerencia pacotes npm.
+- Ambiente local com **Portless** (`https://<PORTLESS_APP_NAME>.localhost`, padrão `painel`): `bun run dev`. O nome do host é configurável via `.env` (`PORTLESS_APP_NAME`), nunca hardcoded. Fallback sem Portless: `bun run dev:vite`.
+- **Docker**: `Dockerfile` (multi-stage: build com Bun, serve com Nginx) e `docker-compose.yml`. Porta do host configurável via `.env` (`APP_PORT`).
+- **Skills de IA instaladas** em `.claude/skills/` (via `skills.sh`): `frontend-design`, `shadcn` (+ `migrate-radix-to-base`), `vercel-react-best-practices`, `tailwind-design-system`. Consulte-as antes de decisões de design, performance de React e uso do shadcn.
+- **agent-browser** (CLI de automação de navegador para agentes, não é uma skill) está como devDependency. Só rode `bunx agent-browser install` / abra o Chrome se o usuário pedir explicitamente — respeita a regra "não abra o Chrome a não ser solicitado".
+
 Siga sempre esses itens ao criar algo em um projeto:
 - Componentização de itens
 - Boas práticas de programação

@@ -12,6 +12,16 @@ dist
 dist-ssr
 *.local
 
+# Env vars (mantenha .env.example versionado)
+.env
+.env.*.local
+
+# Bun
+bun.lockb
+
+# Portless (certificados locais gerados na máquina do dev)
+.portless
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

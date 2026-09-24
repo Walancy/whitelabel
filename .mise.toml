@@ -1,0 +1,7 @@
+[tools]
+# Node 24+ é exigido pelo Portless (https://portless.sh)
+node = "24.21.0"
+bun = "1.3.14"
+
+[env]
+_.file = ".env"

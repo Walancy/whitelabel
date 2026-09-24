@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-ssr
+.git
+.env
+.env.*.local
+*.log
+.mise.toml
+.portless
